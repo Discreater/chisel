@@ -43,6 +43,11 @@ lazy val minimalSettings = Seq(
   crossScalaVersions := Seq("2.13.10", "2.12.17")
 )
 
+lazy val crossSettings = Seq(
+  scalaVersion := "3.0.0",
+  crossScalaVersions ++= Seq("2.13.10", "3.0.0")
+)
+
 lazy val commonSettings = minimalSettings ++ Seq(
   resolvers ++= Resolver.sonatypeOssRepos("snapshots"),
   resolvers ++= Resolver.sonatypeOssRepos("releases"),
@@ -140,17 +145,23 @@ lazy val isAtLeastScala213 = Def.setting {
   import Ordering.Implicits._
   CrossVersion.partialVersion(scalaVersion.value).exists(_ >= (2, 13))
 }
+val isScala3 = Def.setting(
+  CrossVersion.partialVersion(scalaVersion.value).exists(_._1 == 3)
+)
 
 lazy val firrtlSettings = Seq(
   name := "firrtl",
-  addCompilerPlugin(scalafixSemanticdb),
   scalacOptions := Seq(
     "-deprecation",
     "-unchecked",
     "-language:reflectiveCalls",
     "-language:existentials",
     "-language:implicitConversions",
-    "-Yrangepos" // required by SemanticDB compiler plugin
+
+  ),
+  scalacOptions ++= (
+    if(isScala3.value) Seq()
+    else Seq("-Yrangepos")
   ),
   // Always target Java8 for maximum compatibility
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
@@ -158,20 +169,29 @@ lazy val firrtlSettings = Seq(
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "org.scalatest" %% "scalatest" % "3.2.14" % "test",
     "org.scalatestplus" %% "scalacheck-1-15" % "3.2.11.0" % "test",
-    "com.github.scopt" %% "scopt" % "3.7.1",
-    "net.jcazevedo" %% "moultingyaml" % "0.4.2",
+    "com.github.scopt" %% "scopt" % "4.1.0",
+    "net.jcazevedo" %% "moultingyaml" % "0.4.3-SNAPSHOT" cross CrossVersion.for3Use2_13,
     "org.json4s" %% "json4s-native" % "4.0.6",
     "org.apache.commons" % "commons-text" % "1.10.0",
-    "io.github.alexarchambault" %% "data-class" % "0.2.5",
+    "io.github.alexarchambault" %% "data-class" % "0.2.5" cross CrossVersion.for3Use2_13,
     "com.lihaoyi" %% "os-lib" % "0.8.1"
   ),
   // macros for the data-class library
   libraryDependencies ++= {
     if (isAtLeastScala213.value) Nil
-    else Seq(compilerPlugin(("org.scalamacros" % "paradise" % "2.1.1").cross(CrossVersion.full)))
+    else Seq(
+      compilerPlugin(("org.scalamacros" % "paradise" % "2.1.1").cross(CrossVersion.full)),
+    )
+  },
+  libraryDependencies ++= {
+    if (isScala3.value) Nil
+    else Seq(
+      compilerPlugin(scalafixSemanticdb)
+    )
   },
   scalacOptions ++= {
-    if (isAtLeastScala213.value) Seq("-Ymacro-annotations")
+    if (isScala3.value) Nil
+    else if (isAtLeastScala213.value) Seq("-Ymacro-annotations")
     else Nil
   },
   // starting with scala 2.13 the parallel collections are separate from the standard library
@@ -233,8 +253,9 @@ lazy val firrtl = (project in file("firrtl"))
     buildInfoUsePackageAsPath := true,
     buildInfoKeys := Seq[BuildInfoKey](buildInfoPackage, version, scalaVersion, sbtVersion)
   )
-  .settings(warningSuppression: _*)
+//  .settings(warningSuppression: _*)
   .settings(fatalWarningsSettings: _*)
+//  .settings(crossSettings)
 
 lazy val chiselSettings = Seq(
   name := "chisel",
