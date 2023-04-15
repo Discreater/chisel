@@ -37,7 +37,7 @@ object Utils extends LazyLogging {
     * @param message - possible string to emit,
     * @param exception - possible exception triggering the error.
     */
-  def throwInternalError(message: String = "", exception: Option[Throwable] = None) = {
+  def throwInternalError(message: String = "", exception: Option[Throwable] = None): Nothing = {
     // We'll get the first exception in the chain, keeping it intact.
     val first = true
     val throwable = getThrowable(exception, true)
@@ -57,9 +57,9 @@ object Utils extends LazyLogging {
   }
 
   def getUIntWidth(u: BigInt): Int = u.bitLength
-  val BoolType = UIntType(IntWidth(1))
-  val one = UIntLiteral(1)
-  val zero = UIntLiteral(0)
+  val BoolType: UIntType = UIntType(IntWidth(1))
+  val one: UIntLiteral = UIntLiteral(1)
+  val zero: UIntLiteral = UIntLiteral(0)
 
   def sub_type(v: Type): Type = v match {
     case vx: VectorType => vx.tpe
@@ -75,6 +75,6 @@ object Utils extends LazyLogging {
   }
 
 // =================================
-  def error(str: String, cause: Throwable = null) = throw new FirrtlInternalException(str, cause)
+  def error(str: String, cause: Throwable = null): Nothing = throw new FirrtlInternalException(str, cause)
 
 }

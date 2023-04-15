@@ -287,7 +287,7 @@ trait DependencyManager[A, B <: TransformLike[A] with DependencyAPI[B]] extends 
   }
 
   /** This colormap uses Colorbrewer's 4-class OrRd color scheme */
-  protected val colormap = Seq("#fef0d9", "#fdcc8a", "#fc8d59", "#d7301f")
+  protected val colormap: Seq[String] = Seq("#fef0d9", "#fdcc8a", "#fc8d59", "#d7301f")
 
   /** Get a name of some [[firrtl.options.TransformLike TransformLike]] */
   private def transformName(transform: B, suffix: String = ""): String = s""""${transform.name}$suffix""""

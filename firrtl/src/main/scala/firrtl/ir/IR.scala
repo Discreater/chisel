@@ -8,7 +8,7 @@ import firrtl.annotations.Annotation
 import dataclass.{data, since}
 import org.apache.commons.text.translate.{AggregateTranslator, JavaUnicodeEscaper, LookupTranslator}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /** Intermediate Representation */
 abstract class FirrtlNode {
@@ -43,7 +43,7 @@ object FileInfo {
   def unescape(s: String): String = UnescapeFirrtl.translate(s)
 
   /** take an already escaped String and do the additional escaping needed for Verilog comment */
-  def escapedToVerilog(s: String) = EscapedToVerilog.translate(s)
+  def escapedToVerilog(s: String): String = EscapedToVerilog.translate(s)
 
   // custom `CharSequenceTranslator` for FIRRTL Info String escaping
   type CharMap = (CharSequence, CharSequence)
@@ -197,7 +197,7 @@ abstract class Literal extends Expression {
   val width: Width
 }
 case class UIntLiteral(value: BigInt, width: Width) extends Literal with UseSerializer {
-  def tpe = UIntType(width)
+  def tpe: UIntType = UIntType(width)
 }
 object UIntLiteral {
   def minWidth(value: BigInt): Width = IntWidth(math.max(value.bitLength, 1))
@@ -213,7 +213,7 @@ object UIntLiteral {
   }
 }
 case class SIntLiteral(value: BigInt, width: Width) extends Literal with UseSerializer {
-  def tpe = SIntType(width)
+  def tpe: SIntType = SIntType(width)
 }
 object SIntLiteral {
   def minWidth(value: BigInt): Width = IntWidth(value.bitLength + 1)
@@ -246,9 +246,9 @@ case class DefInstance(info: Info, name: String, module: String, tpe: Type = Unk
     with UseSerializer
 
 object ReadUnderWrite extends Enumeration {
-  val Undefined = Value("undefined")
-  val Old = Value("old")
-  val New = Value("new")
+  val Undefined: Value = Value("undefined")
+  val Old: Value = Value("old")
+  val New: Value = Value("new")
 }
 
 case class DefMemory(
@@ -344,9 +344,9 @@ case class ProbeRelease(info: Info, clock: Expression, cond: Expression, probe: 
 
 // formal
 object Formal extends Enumeration {
-  val Assert = Value("assert")
-  val Assume = Value("assume")
-  val Cover = Value("cover")
+  val Assert: Value = Value("assert")
+  val Assume: Value = Value("assume")
+  val Cover: Value = Value("cover")
 }
 
 @data class Verification(
@@ -420,17 +420,17 @@ object IntWidth {
   def unapply(w: IntWidth): Option[BigInt] = Some(w.width)
 }
 class IntWidth(val width: BigInt) extends Width with Product with UseSerializer {
-  override def equals(that: Any) = that match {
+  override def equals(that: Any): Boolean = that match {
     case w: IntWidth => width == w.width
     case _ => false
   }
   override def hashCode = width.toInt
   override def productPrefix = "IntWidth"
-  override def toString = s"$productPrefix($width)"
-  def copy(width:    BigInt = width) = IntWidth(width)
-  def canEqual(that: Any) = that.isInstanceOf[Width]
+  override def toString: String = s"$productPrefix($width)"
+  def copy(width:    BigInt = width): IntWidth = IntWidth(width)
+  def canEqual(that: Any): Boolean = that.isInstanceOf[Width]
   def productArity = 1
-  def productElement(int: Int) = int match {
+  def productElement(int: Int): Any = int match {
     case 0 => width
     case _ => throw new IndexOutOfBoundsException
   }
@@ -470,14 +470,14 @@ case class SIntType(width: Width) extends GroundType with UseSerializer
 case class BundleType(fields: Seq[Field]) extends AggregateType with UseSerializer
 case class VectorType(tpe: Type, size: Int) extends AggregateType with UseSerializer
 case object ClockType extends GroundType with UseSerializer {
-  val width = IntWidth(1)
+  val width: IntWidth = IntWidth(1)
 }
 /* Abstract reset, will be inferred to UInt<1> or AsyncReset */
 case object ResetType extends GroundType with UseSerializer {
-  val width = IntWidth(1)
+  val width: IntWidth = IntWidth(1)
 }
 case object AsyncResetType extends GroundType with UseSerializer {
-  val width = IntWidth(1)
+  val width: IntWidth = IntWidth(1)
 }
 case class AnalogType(width: Width) extends GroundType with UseSerializer
 case object UnknownType extends Type with UseSerializer

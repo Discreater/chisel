@@ -19,7 +19,7 @@ case class LogLevelAnnotation(globalLogLevel: LogLevel.Value = LogLevel.None)
 
 object LogLevelAnnotation extends HasShellOptions {
 
-  val options = Seq(
+  val options: Seq[ShellOption[String]] = Seq(
     new ShellOption[String](
       longOption = "log-level",
       toAnnotationSeq = (a: String) => Seq(LogLevelAnnotation(LogLevel(a))),
@@ -42,7 +42,7 @@ case class ClassLogLevelAnnotation(className: String, level: LogLevel.Value)
 
 object ClassLogLevelAnnotation extends HasShellOptions {
 
-  val options = Seq(
+  val options: Seq[ShellOption[Seq[String]]] = Seq(
     new ShellOption[Seq[String]](
       longOption = "class-log-level",
       toAnnotationSeq = (a: Seq[String]) =>
@@ -67,7 +67,7 @@ case class LogFileAnnotation(file: Option[String]) extends NoTargetAnnotation wi
 
 object LogFileAnnotation extends HasShellOptions {
 
-  val options = Seq(
+  val options: Seq[ShellOption[String]] = Seq(
     new ShellOption[String](
       longOption = "log-file",
       toAnnotationSeq = (a: String) => Seq(LogFileAnnotation(Some(a))),
@@ -83,7 +83,7 @@ object LogFileAnnotation extends HasShellOptions {
   */
 case object LogClassNamesAnnotation extends NoTargetAnnotation with LoggerOption with HasShellOptions {
 
-  val options = Seq(
+  val options: Seq[ShellOption[Unit]] = Seq(
     new ShellOption[Unit](
       longOption = "log-class-names",
       toAnnotationSeq = (a: Unit) => Seq(LogClassNamesAnnotation),

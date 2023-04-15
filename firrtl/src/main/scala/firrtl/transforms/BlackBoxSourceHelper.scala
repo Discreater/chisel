@@ -16,14 +16,14 @@ case class BlackBoxTargetDirAnno(targetDir: String) extends BlackBoxHelperAnno w
 case class BlackBoxInlineAnno(target: ModuleName, name: String, text: String)
     extends BlackBoxHelperAnno
     with SingleTargetAnnotation[ModuleName] {
-  def duplicate(n: ModuleName) = this.copy(target = n)
+  def duplicate(n: ModuleName): BlackBoxInlineAnno = this.copy(target = n)
   override def serialize: String = s"inline\n$name\n$text"
 }
 
 case class BlackBoxPathAnno(target: ModuleName, path: String)
     extends BlackBoxHelperAnno
     with SingleTargetAnnotation[ModuleName] {
-  def duplicate(n: ModuleName) = this.copy(target = n)
+  def duplicate(n: ModuleName): BlackBoxPathAnno = this.copy(target = n)
   override def serialize: String = s"path\n$path"
 }
 

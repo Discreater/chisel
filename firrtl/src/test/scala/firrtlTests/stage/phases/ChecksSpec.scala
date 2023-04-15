@@ -9,17 +9,18 @@ import firrtl.options.{OptionsException, OutputAnnotationFileAnnotation, Phase}
 import firrtl.stage.phases.Checks
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import firrtl.annotations.NoTargetAnnotation
 
 class ChecksSpec extends AnyFlatSpec with Matchers {
 
   class Fixture { val phase: Phase = new Checks }
 
-  val inputCircuit = FirrtlCircuitAnnotation(firrtl.ir.Circuit(firrtl.ir.NoInfo, Seq.empty, "Foo"))
-  val outputFile = OutputFileAnnotation("bar")
-  val outputAnnotationFile = OutputAnnotationFileAnnotation("baz")
-  val infoMode = InfoModeAnnotation("ignore")
+  val inputCircuit: FirrtlCircuitAnnotation = FirrtlCircuitAnnotation(firrtl.ir.Circuit(firrtl.ir.NoInfo, Seq.empty, "Foo"))
+  val outputFile: OutputFileAnnotation = OutputFileAnnotation("bar")
+  val outputAnnotationFile: OutputAnnotationFileAnnotation = OutputAnnotationFileAnnotation("baz")
+  val infoMode: InfoModeAnnotation = InfoModeAnnotation("ignore")
 
-  val min = Seq(inputCircuit, infoMode)
+  val min: Seq[NoTargetAnnotation with FirrtlOption with Serializable] = Seq(inputCircuit, infoMode)
 
   def checkExceptionMessage(phase: Phase, annotations: AnnotationSeq, messageStart: String): Unit =
     intercept[OptionsException] { phase.transform(annotations) }.getMessage should startWith(messageStart)

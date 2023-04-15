@@ -32,7 +32,7 @@ import scala.collection.mutable
   */
 class WriteOutputAnnotations extends Phase {
 
-  override def prerequisites =
+  override def prerequisites: Seq[Dependency[Phase]] =
     Seq(Dependency[GetIncludes], Dependency[AddDefaults], Dependency[Checks])
 
   override def optionalPrerequisiteOf = Seq.empty

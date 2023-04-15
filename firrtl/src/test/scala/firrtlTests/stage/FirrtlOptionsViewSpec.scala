@@ -9,6 +9,7 @@ import firrtl.options.Viewer.view
 import firrtl.stage.{FirrtlOptions, FirrtlOptionsView}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import firrtl.annotations.NoTargetAnnotation
 
 class FirrtlOptionsViewSpec extends AnyFlatSpec with Matchers {
 
@@ -35,7 +36,7 @@ class FirrtlOptionsViewSpec extends AnyFlatSpec with Matchers {
 
   val grault: ir.Circuit = circuitIR("grault")
 
-  val annotations = Seq(
+  val annotations: Seq[NoTargetAnnotation with FirrtlOption with Serializable] = Seq(
     /* FirrtlOptions */
     OutputFileAnnotation("bar"),
     InfoModeAnnotation("use"),

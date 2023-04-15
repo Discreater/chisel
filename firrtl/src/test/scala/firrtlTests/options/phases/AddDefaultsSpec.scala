@@ -11,8 +11,8 @@ class AddDefaultsSpec extends AnyFlatSpec with Matchers {
 
   class Fixture {
     val phase: Phase = new AddDefaults
-    val targetDir = TargetDirAnnotation("foo")
-    val defaultDir = TargetDirAnnotation(".")
+    val targetDir: TargetDirAnnotation = TargetDirAnnotation("foo")
+    val defaultDir: TargetDirAnnotation = TargetDirAnnotation(".")
   }
 
   behavior.of(classOf[AddDefaults].toString)

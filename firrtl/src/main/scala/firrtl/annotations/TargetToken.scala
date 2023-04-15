@@ -58,7 +58,7 @@ case object TargetToken {
     def toTokens: (Instance, OfModule) = (new TargetToken.Instance(i.name), new TargetToken.OfModule(i.module))
   }
 
-  val keyword2targettoken = Map(
+  val keyword2targettoken: Map[String,String => TargetToken] = Map(
     "inst" -> ((value: String) => Instance(value)),
     "of" -> ((value: String) => OfModule(value)),
     "ref" -> ((value: String) => Ref(value)),

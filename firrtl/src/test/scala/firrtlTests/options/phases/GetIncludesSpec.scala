@@ -33,7 +33,7 @@ class GetIncludesSpec extends AnyFlatSpec with Matchers with firrtl.testutils.Ut
     a.zip(b).foreach { case (ax, bx) => ax should be(bx) }
   }
 
-  val files = Seq(
+  val files: Seq[(File, Seq[NoTargetAnnotation with Serializable])] = Seq(
     new File(dir, "a.anno.json") -> Seq(A, ref("b")),
     new File(dir, "b.anno.json") -> Seq(B, ref("c"), ref("a")),
     new File(dir, "c.anno.json") -> Seq(C, ref("d"), ref("e")),

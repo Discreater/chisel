@@ -7,5 +7,5 @@ import firrtl.annotations._
 
 /** Tags an annotation to be consumed by this transform */
 case class FlattenAnnotation(target: Named) extends SingleTargetAnnotation[Named] {
-  def duplicate(n: Named) = FlattenAnnotation(n)
+  def duplicate(n: Named): FlattenAnnotation = FlattenAnnotation(n)
 }

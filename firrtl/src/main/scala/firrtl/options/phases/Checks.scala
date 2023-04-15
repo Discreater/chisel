@@ -12,7 +12,7 @@ import firrtl.options.Dependency
   */
 class Checks extends Phase {
 
-  override def prerequisites = Seq(Dependency[GetIncludes], Dependency[AddDefaults])
+  override def prerequisites: Seq[Dependency[Phase]] = Seq(Dependency[GetIncludes], Dependency[AddDefaults])
 
   override def optionalPrerequisiteOf = Seq.empty
 

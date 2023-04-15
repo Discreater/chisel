@@ -109,7 +109,7 @@ case class TargetDirAnnotation(directory: String = ".") extends NoTargetAnnotati
 
 object TargetDirAnnotation extends HasShellOptions {
 
-  val options = Seq(
+  val options: Seq[ShellOption[String]] = Seq(
     new ShellOption[String](
       longOption = "target-dir",
       toAnnotationSeq = (a: String) => Seq(TargetDirAnnotation(a)),
@@ -145,7 +145,7 @@ case class InputAnnotationFileAnnotation(file: String) extends NoTargetAnnotatio
 
 object InputAnnotationFileAnnotation extends HasShellOptions {
 
-  val options = Seq(
+  val options: Seq[ShellOption[String]] = Seq(
     new ShellOption[String](
       longOption = "annotation-file",
       toAnnotationSeq = (a: String) => Seq(InputAnnotationFileAnnotation(a)),
@@ -165,7 +165,7 @@ case class OutputAnnotationFileAnnotation(file: String) extends NoTargetAnnotati
 
 object OutputAnnotationFileAnnotation extends HasShellOptions {
 
-  val options = Seq(
+  val options: Seq[ShellOption[String]] = Seq(
     new ShellOption[String](
       longOption = "output-annotation-file",
       toAnnotationSeq = (a: String) => Seq(OutputAnnotationFileAnnotation(a)),

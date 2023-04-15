@@ -20,7 +20,7 @@ case class OutputFileAnnotation(file: String) extends NoTargetAnnotation with Fi
 
 object OutputFileAnnotation extends HasShellOptions {
 
-  val options = Seq(
+  val options: Seq[ShellOption[String]] = Seq(
     new ShellOption[String](
       longOption = "output-file",
       toAnnotationSeq = a => Seq(OutputFileAnnotation(a)),
@@ -59,7 +59,7 @@ case class InfoModeAnnotation(modeName: String = "use") extends NoTargetAnnotati
 
 object InfoModeAnnotation extends HasShellOptions {
 
-  val options = Seq(
+  val options: Seq[ShellOption[String]] = Seq(
     new ShellOption[String](
       longOption = "info-mode",
       toAnnotationSeq = a => Seq(InfoModeAnnotation(a)),
@@ -87,7 +87,7 @@ case class FirrtlCircuitAnnotation(circuit: Circuit) extends NoTargetAnnotation 
 }
 
 case object AllowUnrecognizedAnnotations extends NoTargetAnnotation with FirrtlOption with HasShellOptions {
-  val options = Seq(
+  val options: Seq[ShellOption[Unit]] = Seq(
     new ShellOption[Unit](
       longOption = "allow-unrecognized-annotations",
       toAnnotationSeq = _ => Seq(this),

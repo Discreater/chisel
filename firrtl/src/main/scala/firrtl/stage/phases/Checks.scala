@@ -17,7 +17,7 @@ import firrtl.options.{Dependency, OptionsException, Phase}
   */
 class Checks extends Phase {
 
-  override val prerequisites = Seq(Dependency[AddDefaults])
+  override val prerequisites: Seq[Dependency[AddDefaults]] = Seq(Dependency[AddDefaults])
 
   override val optionalPrerequisiteOf = Seq.empty
 

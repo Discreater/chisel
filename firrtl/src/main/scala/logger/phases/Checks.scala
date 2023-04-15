@@ -15,7 +15,7 @@ import scala.collection.mutable
   */
 object Checks extends Phase {
 
-  override def prerequisites = Seq(Dependency[AddDefaults])
+  override def prerequisites: Seq[Dependency[AddDefaults]] = Seq(Dependency[AddDefaults])
   override def optionalPrerequisiteOf = Seq.empty
   override def invalidates(a: Phase) = false
 

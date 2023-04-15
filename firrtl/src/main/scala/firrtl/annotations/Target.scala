@@ -534,7 +534,7 @@ trait IsComponent extends IsMember {
     }
   }
 
-  override def tokens = justPath ++ notPath
+  override def tokens: Seq[TargetToken] = justPath ++ notPath
 
   override def isLocal = path.isEmpty
 }
@@ -561,7 +561,7 @@ case class CircuitTarget(circuit: String) extends CompleteTarget {
   override def addHierarchy(root: String, instance: String): ReferenceTarget =
     ReferenceTarget(circuit, root, Nil, instance, Nil)
 
-  override def path = Seq()
+  override def path: Seq[(Instance, OfModule)] = Seq()
 
   override def toNamed: CircuitName = CircuitName(circuit)
 }
@@ -805,7 +805,7 @@ case class InstanceTarget(
     */
   override def pathlessTarget: InstanceTarget = InstanceTarget(circuit, encapsulatingModule, Nil, instance, ofModule)
 
-  override def notPath = Seq(Instance(instance), OfModule(ofModule))
+  override def notPath: Seq[TargetToken] = Seq(Instance(instance), OfModule(ofModule))
 
   override def setPathTarget(newPath: IsModule): InstanceTarget =
     InstanceTarget(newPath.circuit, newPath.module, newPath.asPath, instance, ofModule)

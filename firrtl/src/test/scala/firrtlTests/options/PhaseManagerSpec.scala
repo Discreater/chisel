@@ -27,19 +27,19 @@ class A extends IdentityPhase {
 
 /** [[Phase]] that requires [[A]] and invalidates nothing */
 class B extends IdentityPhase {
-  override def prerequisites = Seq(Dependency[A])
+  override def prerequisites: Seq[Dependency[A]] = Seq(Dependency[A])
   override def invalidates(phase: Phase): Boolean = false
 }
 
 /** [[Phase]] that requires [[B]] and invalidates nothing */
 class C extends IdentityPhase {
-  override def prerequisites = Seq(Dependency[A])
+  override def prerequisites: Seq[Dependency[A]] = Seq(Dependency[A])
   override def invalidates(phase: Phase): Boolean = false
 }
 
 /** [[Phase]] that requires [[A]] and invalidates [[A]] */
 class D extends IdentityPhase {
-  override def prerequisites = Seq(Dependency[A])
+  override def prerequisites: Seq[Dependency[A]] = Seq(Dependency[A])
   override def invalidates(phase: Phase): Boolean = phase match {
     case _: A => true
     case _ => false
@@ -48,13 +48,13 @@ class D extends IdentityPhase {
 
 /** [[Phase]] that requires [[B]] and invalidates nothing */
 class E extends IdentityPhase {
-  override def prerequisites = Seq(Dependency[B])
+  override def prerequisites: Seq[Dependency[B]] = Seq(Dependency[B])
   override def invalidates(phase: Phase): Boolean = false
 }
 
 /** [[Phase]] that requires [[B]] and [[C]] and invalidates [[E]] */
 class F extends IdentityPhase {
-  override def prerequisites = Seq(Dependency[B], Dependency[C])
+  override def prerequisites: Seq[Dependency[IdentityPhase]] = Seq(Dependency[B], Dependency[C])
   override def invalidates(phase: Phase): Boolean = phase match {
     case _: E => true
     case _ => false
@@ -63,7 +63,7 @@ class F extends IdentityPhase {
 
 /** [[Phase]] that requires [[C]] and invalidates [[F]] */
 class G extends IdentityPhase {
-  override def prerequisites = Seq(Dependency[C])
+  override def prerequisites: Seq[Dependency[C]] = Seq(Dependency[C])
   override def invalidates(phase: Phase): Boolean = phase match {
     case _: F => true
     case _ => false
@@ -71,11 +71,11 @@ class G extends IdentityPhase {
 }
 
 class CyclicA extends IdentityPhase with PreservesAll {
-  override def prerequisites = Seq(Dependency[CyclicB])
+  override def prerequisites: Seq[Dependency[CyclicB]] = Seq(Dependency[CyclicB])
 }
 
 class CyclicB extends IdentityPhase with PreservesAll {
-  override def prerequisites = Seq(Dependency[CyclicA])
+  override def prerequisites: Seq[Dependency[CyclicA]] = Seq(Dependency[CyclicA])
 }
 
 class CyclicC extends IdentityPhase {
@@ -98,25 +98,25 @@ object ComplicatedFixture {
     override def invalidates(phase: Phase): Boolean = false
   }
   class B extends IdentityPhase {
-    override def prerequisites = Seq(Dependency[A])
+    override def prerequisites: Seq[Dependency[A]] = Seq(Dependency[A])
     override def invalidates(phase: Phase): Boolean = false
   }
   class C extends IdentityPhase {
-    override def prerequisites = Seq(Dependency[A])
+    override def prerequisites: Seq[Dependency[A]] = Seq(Dependency[A])
     override def invalidates(phase: Phase): Boolean = phase match {
       case _: B => true
       case _ => false
     }
   }
   class D extends IdentityPhase {
-    override def prerequisites = Seq(Dependency[B])
+    override def prerequisites: Seq[Dependency[B]] = Seq(Dependency[B])
     override def invalidates(phase: Phase): Boolean = phase match {
       case _: C | _: E => true
       case _ => false
     }
   }
   class E extends IdentityPhase {
-    override def prerequisites = Seq(Dependency[B])
+    override def prerequisites: Seq[Dependency[B]] = Seq(Dependency[B])
     override def invalidates(phase: Phase): Boolean = false
   }
 
@@ -135,13 +135,13 @@ object RepeatedAnalysisFixture {
     override def invalidates(phase: Phase): Boolean = false
   }
   class A extends InvalidatesAnalysis {
-    override def prerequisites = Seq(Dependency[Analysis])
+    override def prerequisites: Seq[Dependency[Analysis]] = Seq(Dependency[Analysis])
   }
   class B extends InvalidatesAnalysis {
-    override def prerequisites = Seq(Dependency[A], Dependency[Analysis])
+    override def prerequisites: Seq[Dependency[IdentityPhase]] = Seq(Dependency[A], Dependency[Analysis])
   }
   class C extends InvalidatesAnalysis {
-    override def prerequisites = Seq(Dependency[B], Dependency[Analysis])
+    override def prerequisites: Seq[Dependency[IdentityPhase]] = Seq(Dependency[B], Dependency[Analysis])
   }
 
 }
@@ -152,21 +152,21 @@ object InvertedAnalysisFixture {
     override def invalidates(phase: Phase): Boolean = false
   }
   class A extends IdentityPhase {
-    override def prerequisites = Seq(Dependency[Analysis])
+    override def prerequisites: Seq[Dependency[Analysis]] = Seq(Dependency[Analysis])
     override def invalidates(phase: Phase): Boolean = phase match {
       case _: Analysis => true
       case _ => false
     }
   }
   class B extends IdentityPhase {
-    override def prerequisites = Seq(Dependency[Analysis])
+    override def prerequisites: Seq[Dependency[Analysis]] = Seq(Dependency[Analysis])
     override def invalidates(phase: Phase): Boolean = phase match {
       case _: Analysis | _: A => true
       case _ => false
     }
   }
   class C extends IdentityPhase {
-    override def prerequisites = Seq(Dependency[Analysis])
+    override def prerequisites: Seq[Dependency[Analysis]] = Seq(Dependency[Analysis])
     override def invalidates(phase: Phase): Boolean = phase match {
       case _: Analysis | _: B => true
       case _ => false
@@ -182,7 +182,7 @@ object OptionalPrerequisitesOfFixture {
   }
 
   class Second extends IdentityPhase {
-    override def prerequisites = Seq(Dependency[First])
+    override def prerequisites: Seq[Dependency[First]] = Seq(Dependency[First])
     override def invalidates(phase: Phase): Boolean = false
   }
 
@@ -191,8 +191,8 @@ object OptionalPrerequisitesOfFixture {
    * loop detection.
    */
   class Custom extends IdentityPhase {
-    override def prerequisites = Seq(Dependency[First])
-    override def optionalPrerequisiteOf = Seq(Dependency[Second])
+    override def prerequisites: Seq[Dependency[First]] = Seq(Dependency[First])
+    override def optionalPrerequisiteOf: Seq[Dependency[Second]] = Seq(Dependency[Second])
     override def invalidates(phase: Phase): Boolean = false
   }
 
@@ -222,7 +222,7 @@ object ChainedInvalidationFixture {
     override def invalidates(phase: Phase): Boolean = false
   }
   class E extends IdentityPhase {
-    override def prerequisites = Seq(Dependency[A], Dependency[B], Dependency[C], Dependency[D])
+    override def prerequisites: Seq[Dependency[IdentityPhase]] = Seq(Dependency[A], Dependency[B], Dependency[C], Dependency[D])
     override def invalidates(phase: Phase): Boolean = false
   }
 
@@ -231,7 +231,7 @@ object ChainedInvalidationFixture {
 object UnrelatedFixture {
 
   trait InvalidatesB8Dep { this: Phase =>
-    override def invalidates(a: Phase) = a match {
+    override def invalidates(a: Phase): Boolean = a match {
       case _: B8Dep => true
       case _ => false
     }
@@ -256,8 +256,8 @@ object UnrelatedFixture {
   class B15 extends IdentityPhase with PreservesAll
 
   class B6Sub extends B6 {
-    override def prerequisites = Seq(Dependency[B6])
-    override def optionalPrerequisiteOf = Seq(Dependency[B7])
+    override def prerequisites: Seq[Dependency[B6]] = Seq(Dependency[B6])
+    override def optionalPrerequisiteOf: Seq[Dependency[B7]] = Seq(Dependency[B7])
   }
 
   class B6_0 extends B6Sub
@@ -278,7 +278,7 @@ object UnrelatedFixture {
   class B6_15 extends B6Sub
 
   class B8Dep extends B8 {
-    override def optionalPrerequisiteOf = Seq(Dependency[B8])
+    override def optionalPrerequisiteOf: Seq[Dependency[B8]] = Seq(Dependency[B8])
   }
 
   class B8_0 extends B8Dep
@@ -305,28 +305,28 @@ object CustomAfterOptimizationFixture {
   class Root extends IdentityPhase with PreservesAll
 
   class OptMinimum extends IdentityPhase with PreservesAll {
-    override def prerequisites = Seq(Dependency[Root])
-    override def optionalPrerequisiteOf = Seq(Dependency[AfterOpt])
+    override def prerequisites: Seq[Dependency[Root]] = Seq(Dependency[Root])
+    override def optionalPrerequisiteOf: Seq[Dependency[AfterOpt]] = Seq(Dependency[AfterOpt])
   }
 
   class OptFull extends IdentityPhase with PreservesAll {
-    override def prerequisites = Seq(Dependency[Root], Dependency[OptMinimum])
-    override def optionalPrerequisiteOf = Seq(Dependency[AfterOpt])
+    override def prerequisites: Seq[Dependency[IdentityPhase with PreservesAll]] = Seq(Dependency[Root], Dependency[OptMinimum])
+    override def optionalPrerequisiteOf: Seq[Dependency[AfterOpt]] = Seq(Dependency[AfterOpt])
   }
 
   class AfterOpt extends IdentityPhase with PreservesAll
 
   class DoneMinimum extends IdentityPhase with PreservesAll {
-    override def prerequisites = Seq(Dependency[OptMinimum])
+    override def prerequisites: Seq[Dependency[OptMinimum]] = Seq(Dependency[OptMinimum])
   }
 
   class DoneFull extends IdentityPhase with PreservesAll {
-    override def prerequisites = Seq(Dependency[OptFull])
+    override def prerequisites: Seq[Dependency[OptFull]] = Seq(Dependency[OptFull])
   }
 
   class Custom extends IdentityPhase with PreservesAll {
-    override def prerequisites = Seq(Dependency[Root], Dependency[AfterOpt])
-    override def optionalPrerequisiteOf = Seq(Dependency[DoneMinimum], Dependency[DoneFull])
+    override def prerequisites: Seq[Dependency[IdentityPhase with PreservesAll]] = Seq(Dependency[Root], Dependency[AfterOpt])
+    override def optionalPrerequisiteOf: Seq[Dependency[IdentityPhase with PreservesAll]] = Seq(Dependency[DoneMinimum], Dependency[DoneFull])
   }
 
 }
@@ -336,25 +336,25 @@ object OptionalPrerequisitesFixture {
   class Root extends IdentityPhase
 
   class OptMinimum extends IdentityPhase with PreservesAll {
-    override def prerequisites = Seq(Dependency[Root])
+    override def prerequisites: Seq[Dependency[Root]] = Seq(Dependency[Root])
   }
 
   class OptFull extends IdentityPhase with PreservesAll {
-    override def prerequisites = Seq(Dependency[Root], Dependency[OptMinimum])
+    override def prerequisites: Seq[Dependency[IdentityPhase]] = Seq(Dependency[Root], Dependency[OptMinimum])
   }
 
   class DoneMinimum extends IdentityPhase with PreservesAll {
-    override def prerequisites = Seq(Dependency[OptMinimum])
+    override def prerequisites: Seq[Dependency[OptMinimum]] = Seq(Dependency[OptMinimum])
   }
 
   class DoneFull extends IdentityPhase with PreservesAll {
-    override def prerequisites = Seq(Dependency[OptFull])
+    override def prerequisites: Seq[Dependency[OptFull]] = Seq(Dependency[OptFull])
   }
 
   class Custom extends IdentityPhase with PreservesAll {
-    override def prerequisites = Seq(Dependency[Root])
-    override def optionalPrerequisites = Seq(Dependency[OptMinimum], Dependency[OptFull])
-    override def optionalPrerequisiteOf = Seq(Dependency[DoneMinimum], Dependency[DoneFull])
+    override def prerequisites: Seq[Dependency[Root]] = Seq(Dependency[Root])
+    override def optionalPrerequisites: Seq[Dependency[IdentityPhase with PreservesAll]] = Seq(Dependency[OptMinimum], Dependency[OptFull])
+    override def optionalPrerequisiteOf: Seq[Dependency[IdentityPhase with PreservesAll]] = Seq(Dependency[DoneMinimum], Dependency[DoneFull])
   }
 
 }
@@ -371,7 +371,7 @@ object OrderingFixture {
   }
 
   class C extends IdentityPhase {
-    override def prerequisites = Seq(Dependency[A], Dependency[B])
+    override def prerequisites: Seq[Dependency[IdentityPhase]] = Seq(Dependency[A], Dependency[B])
     override def invalidates(phase: Phase): Boolean = phase match {
       case _: B => true
       case _ => false
@@ -379,7 +379,7 @@ object OrderingFixture {
   }
 
   class Cx extends C {
-    override def prerequisites = Seq(Dependency[B], Dependency[A])
+    override def prerequisites: Seq[Dependency[IdentityPhase]] = Seq(Dependency[B], Dependency[A])
   }
 
 }

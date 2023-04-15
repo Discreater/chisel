@@ -8,12 +8,12 @@ import firrtl.options.{HasShellOptions, ShellOption}
 
 /** Indicates that something should be inlined */
 case class InlineAnnotation(target: Named) extends SingleTargetAnnotation[Named] {
-  def duplicate(n: Named) = InlineAnnotation(n)
+  def duplicate(n: Named): InlineAnnotation = InlineAnnotation(n)
 }
 
 object InlineAnnotation extends HasShellOptions {
 
-  override val options = Seq(
+  override val options: Seq[ShellOption[Seq[String]]] = Seq(
     new ShellOption[Seq[String]](
       longOption = "inline",
       toAnnotationSeq = (a: Seq[String]) =>

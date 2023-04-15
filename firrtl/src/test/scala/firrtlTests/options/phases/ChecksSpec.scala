@@ -10,13 +10,13 @@ import org.scalatest.matchers.should.Matchers
 
 class ChecksSpec extends AnyFlatSpec with Matchers {
 
-  val targetDir = TargetDirAnnotation("foo")
-  val annoOut = OutputAnnotationFileAnnotation("bar")
+  val targetDir: TargetDirAnnotation = TargetDirAnnotation("foo")
+  val annoOut: OutputAnnotationFileAnnotation = OutputAnnotationFileAnnotation("bar")
 
   class Fixture { val phase: Phase = new Checks }
 
   /* A minimum annotation Seq that will pass [[Checks]] */
-  val min = Seq(targetDir)
+  val min: Seq[TargetDirAnnotation] = Seq(targetDir)
 
   def checkExceptionMessage(phase: Phase, annotations: AnnotationSeq, messageStart: String): Unit =
     intercept[OptionsException] { phase.transform(annotations) }.getMessage should startWith(messageStart)

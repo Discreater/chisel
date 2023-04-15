@@ -17,7 +17,7 @@ case object PassModuleName extends PassOption
 object PassConfigUtil {
   type PassOptionMap = Map[PassOption, String]
 
-  def getPassOptions(t: String, usage: String = "") = {
+  def getPassOptions(t: String, usage: String = ""): PassOptionMap = {
     // can't use space to delimit sub arguments (otherwise, Driver.scala will throw error)
     val passArgList = t.split(":").toList
 
@@ -69,7 +69,7 @@ Optional Arguments:
     ReplSeqMemAnnotation(inputFileName, outputConfig)
   }
 
-  val options = Seq(
+  val options: Seq[ShellOption[String]] = Seq(
     new ShellOption[String](
       longOption = "repl-seq-mem",
       toAnnotationSeq = (a: String) => Seq(passes.memlib.ReplSeqMemAnnotation.parse(a)),

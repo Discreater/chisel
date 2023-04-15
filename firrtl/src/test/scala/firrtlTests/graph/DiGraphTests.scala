@@ -7,17 +7,17 @@ import firrtl.testutils._
 
 class DiGraphTests extends FirrtlFlatSpec {
 
-  val acyclicGraph = DiGraph(
+  val acyclicGraph: DiGraph[String] = DiGraph(
     Map("a" -> Set("b", "c"), "b" -> Set("d"), "c" -> Set("d"), "d" -> Set("e"), "e" -> Set.empty[String])
   )
 
-  val reversedAcyclicGraph = DiGraph(
+  val reversedAcyclicGraph: DiGraph[String] = DiGraph(
     Map("a" -> Set.empty[String], "b" -> Set("a"), "c" -> Set("a"), "d" -> Set("b", "c"), "e" -> Set("d"))
   )
 
-  val cyclicGraph = DiGraph(Map("a" -> Set("b", "c"), "b" -> Set("d"), "c" -> Set("d"), "d" -> Set("a")))
+  val cyclicGraph: DiGraph[String] = DiGraph(Map("a" -> Set("b", "c"), "b" -> Set("d"), "c" -> Set("d"), "d" -> Set("a")))
 
-  val tupleGraph = DiGraph(
+  val tupleGraph: DiGraph[(String, Int)] = DiGraph(
     Map(
       ("a", 0) -> Set(("b", 2)),
       ("a", 1) -> Set(("c", 3)),
@@ -26,7 +26,7 @@ class DiGraphTests extends FirrtlFlatSpec {
     )
   )
 
-  val degenerateGraph = DiGraph(Map("a" -> Set.empty[String]))
+  val degenerateGraph: DiGraph[String] = DiGraph(Map("a" -> Set.empty[String]))
 
   "A graph without cycles" should "have NOT SCCs" in {
     acyclicGraph.findSCCs.filter(_.length > 1) shouldBe empty

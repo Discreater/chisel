@@ -6,6 +6,7 @@ package annotations
 import java.io.File
 
 import firrtl.ir._
+import scala.util.matching.Regex
 
 case class InvalidAnnotationFileException(file: File, cause: FirrtlUserException = null)
     extends FirrtlUserException(s"$file", cause)
@@ -33,14 +34,14 @@ object UnserializableAnnotationException {
 object AnnotationUtils {
 
   /** Returns true if a valid Module name */
-  val SerializedModuleName = """([a-zA-Z_][a-zA-Z_0-9~!@#$%^*\-+=?/]*)""".r
+  val SerializedModuleName: Regex = """([a-zA-Z_][a-zA-Z_0-9~!@#$%^*\-+=?/]*)""".r
   def validModuleName(s: String): Boolean = s match {
     case SerializedModuleName(name) => true
     case _                          => false
   }
 
   /** Returns true if a valid component/subcomponent name */
-  val SerializedComponentName = """([a-zA-Z_][a-zA-Z_0-9\[\]\.~!@#$%^*\-+=?/]*)""".r
+  val SerializedComponentName: Regex = """([a-zA-Z_][a-zA-Z_0-9\[\]\.~!@#$%^*\-+=?/]*)""".r
   def validComponentName(s: String): Boolean = s match {
     case SerializedComponentName(name) => true
     case _                             => false

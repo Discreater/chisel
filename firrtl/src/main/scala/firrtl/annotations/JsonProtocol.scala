@@ -139,7 +139,7 @@ object JsonProtocol extends LazyLogging {
       )
 
   /** Construct Json formatter for annotations */
-  def jsonFormat(tags: Seq[Class[_]]) = {
+  def jsonFormat(tags: Seq[Class[_]]): Formats = {
     Serialization.formats(FullTypeHints(tags.toList, "class")) +
       new NamedSerializer + new CircuitNameSerializer +
       new ModuleNameSerializer + new ComponentNameSerializer + new TargetSerializer +

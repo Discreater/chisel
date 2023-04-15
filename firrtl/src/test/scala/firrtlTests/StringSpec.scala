@@ -15,7 +15,7 @@ import org.scalacheck.Arbitrary._
 class StringSpec extends FirrtlPropSpec {
 
   // Whitelist is [0x20 - 0x7e]
-  val whitelist =
+  val whitelist: String =
     """ !\"#$%&\''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ""" +
       """[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"""
 
@@ -30,7 +30,7 @@ class StringSpec extends FirrtlPropSpec {
 
   // Valid escapes = \n, \t, \\, \", \'
   val esc = """\\\'\"\t\n"""
-  val validEsc = Seq('n', 't', '\\', '"', '\'')
+  val validEsc: Seq[Char] = Seq('n', 't', '\\', '"', '\'')
   property(s"Escape characters [$esc] should parse") {
     val lit = StringLit.unescape(esc)
     assert(lit.string(0).toByte == 0x5c)
@@ -59,18 +59,18 @@ class StringSpec extends FirrtlPropSpec {
     rec(str.toList)
   }
   // From IEEE 1364-2001 17.1.1.2
-  val legalFormats = "HhDdOoBbCcLlVvMmSsTtUuZz%".toSet
+  val legalFormats: Set[Char] = "HhDdOoBbCcLlVvMmSsTtUuZz%".toSet
   def isValidVerilogFormat(str: String): Boolean = str.toSeq.sliding(2).forall {
     case Seq('%', char) if legalFormats contains char => true
     case _                                            => true
   }
 
   // Generators for legal Firrtl format strings
-  val genFormat = Gen.oneOf("bdxc%").map(List('%', _))
-  val genEsc = Gen.oneOf(esc.toSeq).map(List(_))
-  val genChar = arbitrary[Char].suchThat(c => (c != '%' && c != '\\')).map(List(_))
-  val genFragment = Gen.frequency((10, genChar), (1, genFormat), (1, genEsc)).map(_.mkString)
-  val genString = Gen.listOf[String](genFragment).map(_.mkString)
+  val genFormat: Gen[List[Char]] = Gen.oneOf("bdxc%").map(List('%', _))
+  val genEsc: Gen[List[Char]] = Gen.oneOf(esc.toSeq).map(List(_))
+  val genChar: Gen[List[Char]] = arbitrary[Char].suchThat(c => (c != '%' && c != '\\')).map(List(_))
+  val genFragment: Gen[String] = Gen.frequency((10, genChar), (1, genFormat), (1, genEsc)).map(_.mkString)
+  val genString: Gen[String] = Gen.listOf[String](genFragment).map(_.mkString)
 
   property("Firrtl Format Strings with Unicode chars should emit as legal Verilog Strings") {
     forAll(genString) { str =>

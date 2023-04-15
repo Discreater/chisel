@@ -18,7 +18,7 @@ import java.util.ServiceLoader
 class BareShell(val applicationName: String) {
 
   /** Command line argument parser (OptionParser) with modifications */
-  protected val parser = new OptionParser[AnnotationSeq](applicationName) with DuplicateHandling with ExceptOnError
+  protected val parser: OptionParser[AnnotationSeq] with DuplicateHandling with ExceptOnError = new OptionParser[AnnotationSeq](applicationName) with DuplicateHandling with ExceptOnError
   parser.help("help").text("prints this usage text")
 
   /** This method can be overriden to do some work everytime before parsing runs, e.g., to add options to the parser. */

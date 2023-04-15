@@ -17,7 +17,7 @@ case object HelloAnnotation extends NoTargetAnnotation
 class BarLibrary extends RegisteredLibrary {
   def name: String = "Bar"
 
-  val options = Seq(
+  val options: Seq[ShellOption[Unit]] = Seq(
     new ShellOption[Unit](longOption = "world", toAnnotationSeq = _ => Seq(HelloAnnotation), helpText = "World option")
   )
 }

@@ -22,14 +22,14 @@ object JsonProtocolTestClasses {
   case class PolymorphicParameterAnnotationWithTypeHints(param: Parent)
       extends NoTargetAnnotation
       with HasSerializationHints {
-    def typeHints = Seq(param.getClass)
+    def typeHints: Seq[Class[_]] = Seq(param.getClass)
   }
 
   case class TypeParameterizedAnnotation[T](param: T) extends NoTargetAnnotation
   case class TypeParameterizedAnnotationWithTypeHints[T](param: T)
       extends NoTargetAnnotation
       with HasSerializationHints {
-    def typeHints = Seq(param.getClass)
+    def typeHints: Seq[Class[_]] = Seq(param.getClass)
   }
 
   case class SimpleAnnotation(alpha: String) extends NoTargetAnnotation

@@ -15,7 +15,7 @@ object Serializer {
   val Indent = "  "
 
   // The version supported by the serializer.
-  val version = Version(2, 0, 0)
+  val version: Version = Version(2, 0, 0)
 
   /** Converts a `FirrtlNode` into its string representation with
     * default indentation.
@@ -170,7 +170,7 @@ object Serializer {
 
     // We could initialze the StringBuilder size, but this is bad for small modules which may not
     // even reach the bufferSize.
-    private implicit val b = new StringBuilder
+    private implicit val b: StringBuilder = new StringBuilder
 
     // The flattening of Whens into WhenBegin and friends requires us to keep track of the
     // indention level
