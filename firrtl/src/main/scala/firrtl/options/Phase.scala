@@ -3,12 +3,9 @@
 package firrtl.options
 
 import firrtl.AnnotationSeq
-
 import logger.LazyLogging
 
 import scala.collection.mutable.LinkedHashSet
-
-import scala.reflect
 import scala.reflect.ClassTag
 
 object Dependency {
@@ -34,7 +31,9 @@ object Dependency {
   }
 
   private def isSingleton(obj: AnyRef): Boolean = {
-    reflect.runtime.currentMirror.reflect(obj).symbol.isModuleClass
+    // TODO: check
+    obj.getClass.getFields.map(_.getName) contains "MODULE$"
+//    reflect.runtime.currentMirror.reflect(obj).symbol.isModuleClass
   }
 }
 

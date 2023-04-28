@@ -40,19 +40,18 @@ lazy val minimalSettings = Seq(
   organization := "org.chipsalliance",
   scalacOptions := Seq("-deprecation", "-feature"),
   scalaVersion := "2.13.10",
-  crossScalaVersions := Seq("2.13.10", "2.12.17")
+  crossScalaVersions := Seq("2.13.10", "2.12.17", "3.2.2")
 )
 
 lazy val crossSettings = Seq(
-  scalaVersion := "3.0.0",
-  crossScalaVersions ++= Seq("2.13.10", "3.0.0")
+  scalaVersion := "3.2.2"
+//  crossScalaVersions ++= Seq("2.13.10", "3.2.2")
 )
 
 lazy val commonSettings = minimalSettings ++ Seq(
   resolvers ++= Resolver.sonatypeOssRepos("snapshots"),
   resolvers ++= Resolver.sonatypeOssRepos("releases"),
   autoAPIMappings := true,
-  libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   // Macros paradise is integrated into 2.13 but requires a scalacOption
   scalacOptions ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
@@ -62,6 +61,13 @@ lazy val commonSettings = minimalSettings ++ Seq(
   },
   libraryDependencies ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((3, n)) => Nil
+      case _            => "org.scala-lang" % "scala-reflect" % scalaVersion.value :: Nil
+    }
+  },
+  libraryDependencies ++= {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((3, n))            => Nil
       case Some((2, n)) if n >= 13 => Nil
       case _                       => compilerPlugin(("org.scalamacros" % "paradise" % "2.1.1").cross(CrossVersion.full)) :: Nil
     }
@@ -156,38 +162,43 @@ lazy val firrtlSettings = Seq(
     "-unchecked",
     "-language:reflectiveCalls",
     "-language:existentials",
-    "-language:implicitConversions",
-
+    "-language:implicitConversions"
   ),
   scalacOptions ++= (
-    if(isScala3.value) Seq()
+    if (isScala3.value) Seq()
     else Seq("-Yrangepos")
   ),
+  semanticdbEnabled := true,
   // Always target Java8 for maximum compatibility
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
   libraryDependencies ++= Seq(
-    "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "org.scalatest" %% "scalatest" % "3.2.14" % "test",
     "org.scalatestplus" %% "scalacheck-1-15" % "3.2.11.0" % "test",
     "com.github.scopt" %% "scopt" % "4.1.0",
-    "net.jcazevedo" %% "moultingyaml" % "0.4.3-SNAPSHOT" cross CrossVersion.for3Use2_13,
+    ("net.jcazevedo" %% "moultingyaml" % "0.4.3-SNAPSHOT").cross(CrossVersion.for3Use2_13),
     "org.json4s" %% "json4s-native" % "4.0.6",
     "org.apache.commons" % "commons-text" % "1.10.0",
-    "io.github.alexarchambault" %% "data-class" % "0.2.5" cross CrossVersion.for3Use2_13,
     "com.lihaoyi" %% "os-lib" % "0.8.1"
   ),
+  libraryDependencies ++= {
+    if (isScala3.value)
+      Seq("net.hamnaberg" %% "dataclass-annotation" % "0.1.0")
+    else Seq(("io.github.alexarchambault" %% "data-class" % "0.2.5").cross(CrossVersion.for3Use2_13))
+  },
   // macros for the data-class library
   libraryDependencies ++= {
-    if (isAtLeastScala213.value) Nil
-    else Seq(
-      compilerPlugin(("org.scalamacros" % "paradise" % "2.1.1").cross(CrossVersion.full)),
-    )
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((3, n))            => Nil
+      case Some((2, n)) if n >= 13 => Nil
+      case _                       => compilerPlugin(("org.scalamacros" % "paradise" % "2.1.1").cross(CrossVersion.full)) :: Nil
+    }
   },
   libraryDependencies ++= {
     if (isScala3.value) Nil
-    else Seq(
-      compilerPlugin(scalafixSemanticdb)
-    )
+    else
+      Seq(
+        compilerPlugin(scalafixSemanticdb)
+      )
   },
   scalacOptions ++= {
     if (isScala3.value) Nil

@@ -4,8 +4,6 @@ package firrtl
 package ir
 
 import firrtl.annotations.Annotation
-
-import dataclass.{data, since}
 import org.apache.commons.text.translate.{AggregateTranslator, JavaUnicodeEscaper, LookupTranslator}
 
 import scala.jdk.CollectionConverters._
@@ -200,7 +198,7 @@ case class UIntLiteral(value: BigInt, width: Width) extends Literal with UseSeri
   def tpe: UIntType = UIntType(width)
 }
 object UIntLiteral {
-  def minWidth(value: BigInt): Width = IntWidth(math.max(value.bitLength, 1))
+  def minWidth(value: BigInt): Width = IntWidth(BigInt(math.max(value.bitLength, 1)))
   def apply(value:    BigInt): UIntLiteral = new UIntLiteral(value, minWidth(value))
 
   /** Utility to construct UIntLiterals masked by the width
@@ -208,7 +206,7 @@ object UIntLiteral {
     * This supports truncating negative values as well as values that are too wide for the width
     */
   def masked(value: BigInt, width: IntWidth): UIntLiteral = {
-    val mask = (BigInt(1) << width.width.toInt) - 1
+    val mask = (BigInt(1) << width.width.toInt) - BigInt(1)
     UIntLiteral(value & mask, width)
   }
 }
@@ -216,7 +214,7 @@ case class SIntLiteral(value: BigInt, width: Width) extends Literal with UseSeri
   def tpe: SIntType = SIntType(width)
 }
 object SIntLiteral {
-  def minWidth(value: BigInt): Width = IntWidth(value.bitLength + 1)
+  def minWidth(value: BigInt): Width = IntWidth(BigInt(value.bitLength + 1))
   def apply(value:    BigInt): SIntLiteral = new SIntLiteral(value, minWidth(value))
 }
 case class DoPrim(op: PrimOp, args: Seq[Expression], consts: Seq[BigInt], tpe: Type)
@@ -285,32 +283,80 @@ case class Connect(info: Info, loc: Expression, expr: Expression) extends Statem
 case class IsInvalid(info: Info, expr: Expression) extends Statement with HasInfo with UseSerializer
 case class Attach(info: Info, exprs: Seq[Expression]) extends Statement with HasInfo with UseSerializer
 
-@data class Stop(info: Info, ret: Int, clk: Expression, en: Expression, @since("FIRRTL 1.5") name: String = "")
+// TODO: @data class?
+final class Stop(val info: Info,val ret: Int, val clk: Expression, val en: Expression, val name: String = "")
     extends Statement
     with HasInfo
     with IsDeclaration
-    with UseSerializer {
+    with UseSerializer
+    with Product
+    with Serializable {
+
+  def withInfo(info: Info): Stop = new Stop(info = info, ret = ret, clk = clk, en = en, name = name)
+  def withRet(ret: Int): Stop = new Stop(info = info, ret = ret, clk = clk, en = en, name = name)
+  def withClk(clk: Expression): Stop = new Stop(info = info, ret = ret, clk = clk, en = en, name = name)
+  def withEn(en: Expression): Stop = new Stop(info = info, ret = ret, clk = clk, en = en, name = name)
+  def withName(name: String): Stop = new Stop(info = info, ret = ret, clk = clk, en = en, name = name)
   def copy(info: Info = info, ret: Int = ret, clk: Expression = clk, en: Expression = en): Stop = {
-    Stop(info, ret, clk, en, name)
+    new Stop(info, ret, clk, en, name)
+  }
+
+  override def canEqual(obj: Any) = obj != null & obj.isInstanceOf[Stop]
+
+  override def equals(obj: Any) = this.eq(obj.asInstanceOf[AnyRef]) || canEqual(obj) && {
+    val other = obj.asInstanceOf[Stop]
+    info == other.info && ret == other.ret && clk == other.clk && en == other.en && name == other.name
+  }
+
+  override def hashCode() = {
+    var code = 17 + "Stop".##
+    code = 37 * code + info.##
+    code = 37 * code + ret.##
+    code = 37 * code + clk.##
+    code = 37 * code + en.##
+    code = 37 * code + name.##
+    37 * code
+  }
+
+  private def tuple = Tuple5(info, ret, clk, en, name)
+
+  override def productArity = 5
+  override def productElement(n: Int) = n match {
+    case 0 => info
+    case 1 => ret
+    case 2 => clk
+    case 3 => en
+    case 4 => name
+    case n => throw new IndexOutOfBoundsException(n.toString)
   }
 }
 object Stop {
+  def apply(info: Info, ret: Int, clk: Expression, en: Expression): Stop = new Stop(info, ret, clk, en)
+  def apply(info: Info, ret: Int, clk: Expression, en: Expression, name: String): Stop = new Stop(info, ret, clk, en, name)
   def unapply(s: Stop): Some[(Info, Int, Expression, Expression)] = {
     Some((s.info, s.ret, s.clk, s.en))
   }
 }
-@data class Print(
-  info:   Info,
-  string: StringLit,
-  args:   Seq[Expression],
-  clk:    Expression,
-  en:     Expression,
-  @since("FIRRTL 1.5")
-  name: String = "")
+final class Print(
+  val info:   Info,
+  val string: StringLit,
+  val args:   Seq[Expression],
+  val clk:    Expression,
+  val en:     Expression,
+  val name: String = "")
     extends Statement
     with HasInfo
     with IsDeclaration
-    with UseSerializer {
+    with UseSerializer
+    with Product
+    with Serializable {
+
+  def withInfo(info: Info): Print = new Print(info = info, string = string, args = args, clk = clk, en = en, name = name)
+  def withString(string: StringLit): Print = new Print(info = info, string = string, args = args, clk = clk, en = en, name = name)
+  def withArgs(args: Seq[Expression]): Print = new Print(info = info, string = string, args = args, clk = clk, en = en, name = name)
+  def withClk(clk: Expression): Print = new Print(info = info, string = string, args = args, clk = clk, en = en, name = name)
+  def withEn(en: Expression): Print = new Print(info = info, string = string, args = args, clk = clk, en = en, name = name)
+  def withName(name: String): Print = new Print(info = info, string = string, args = args, clk = clk, en = en, name = name)
   def copy(
     info:   Info = info,
     string: StringLit = string,
@@ -320,8 +366,61 @@ object Stop {
   ): Print = {
     Print(info, string, args, clk, en, name)
   }
+
+  override def toString = {
+    val b = new StringBuilder("Print(")
+    b.append(String.valueOf(info))
+    b.append(", ")
+    b.append(String.valueOf(string))
+    b.append(", ")
+    b.append(String.valueOf(args))
+    b.append(", ")
+    b.append(String.valueOf(clk))
+    b.append(", ")
+    b.append(String.valueOf(en))
+    b.append(", ")
+    b.append(String.valueOf(name))
+    b.append(")")
+    b.toString
+  }
+
+  override def canEqual(obj: Any) = obj != null && obj.isInstanceOf[Print]
+
+  override def equals(obj: Any) = this.eq(obj.asInstanceOf[AnyRef]) || canEqual(obj) && {
+    val other = obj.asInstanceOf[Print]
+    info == other.info && string == other.string && args == other.args && clk == other.clk && en == other.en && name == other.name
+  }
+
+  override def hashCode() = {
+    var code = 17 + "Print".##
+    code = 37 * code + info.##
+    code = 37 * code + string.##
+    code = 37 * code + args.##
+    code = 37 * code + clk.##
+    code = 37 * code + en.##
+    code = 37 * code + name.##
+    37 * code
+  }
+
+  private def tuple = (info, string, args, clk, en, name)
+
+  override def productArity: Int = 6
+
+  override def productElement(n: Int): Any = n match {
+    case 0 => this.info
+    case 1 => this.string
+    case 2 => this.args
+    case 3 => this.clk
+    case 4 => this.en
+    case 5 => this.name
+    case _ => throw new IndexOutOfBoundsException(n.toString)
+  }
 }
 object Print {
+
+  def apply(info: Info, string: StringLit, args: Seq[Expression], clk: Expression, en: Expression): Print = new Print(info, string, args, clk, en)
+  def apply(info: Info, string: StringLit, args: Seq[Expression], clk: Expression, en: Expression, name: String): Print = new Print(info, string, args, clk, en, name)
+
   def unapply(s: Print): Some[(Info, StringLit, Seq[Expression], Expression, Expression)] = {
     Some((s.info, s.string, s.args, s.clk, s.en))
   }
@@ -349,19 +448,29 @@ object Formal extends Enumeration {
   val Cover: Value = Value("cover")
 }
 
-@data class Verification(
-  op:   Formal.Value,
-  info: Info,
-  clk:  Expression,
-  pred: Expression,
-  en:   Expression,
-  msg:  StringLit,
-  @since("FIRRTL 1.5")
-  name: String = "")
+final class Verification(
+  val op:   Formal.Value,
+  val info: Info,
+  val clk:  Expression,
+  val pred: Expression,
+  val en:   Expression,
+  val msg:  StringLit,
+  val name: String = "")
     extends Statement
     with HasInfo
     with IsDeclaration
-    with UseSerializer {
+    with UseSerializer
+    with Product
+    with Serializable {
+
+  def withOp(op: Formal.Value): Verification = new Verification(op, info, clk, pred, en, msg, name)
+  def withInfo(info: Info): Verification = new Verification(op, info, clk, pred, en, msg, name)
+  def withClk(clk: Expression): Verification = new Verification(op, info, clk, pred, en, msg, name)
+    def withPred(pred: Expression): Verification = new Verification(op, info, clk, pred, en, msg, name)
+    def withEn(en: Expression): Verification = new Verification(op, info, clk, pred, en, msg, name)
+    def withMsg(msg: StringLit): Verification = new Verification(op, info, clk, pred, en, msg, name)
+    def withName(name: String): Verification = new Verification(op, info, clk, pred, en, msg, name)
+
   def copy(
     op:   Formal.Value = op,
     info: Info = info,
@@ -372,8 +481,67 @@ object Formal extends Enumeration {
   ): Verification = {
     Verification(op, info, clk, pred, en, msg, name)
   }
+
+  override def toString = {
+    val b = new StringBuilder("Verification(")
+    b.append(String.valueOf(op))
+    b.append(", ")
+    b.append(String.valueOf(info))
+    b.append(", ")
+    b.append(String.valueOf(clk))
+    b.append(", ")
+    b.append(String.valueOf(pred))
+    b.append(", ")
+    b.append(String.valueOf(en))
+    b.append(", ")
+    b.append(String.valueOf(msg))
+    b.append(", ")
+    b.append(String.valueOf(name))
+    b.append(")")
+    b.toString
+  }
+
+  override def canEqual(obj: Any): Boolean = obj != null && obj.isInstanceOf[Verification]
+
+  override def equals(obj: Any) = this.eq(obj.asInstanceOf[AnyRef]) || canEqual(obj) && {
+    val other = obj.asInstanceOf[Verification]
+    op == other.op && info == other.info && clk == other.clk && pred == other.pred && en == other.en && msg == other.msg && name == other.name
+  }
+
+  override def hashCode() = {
+    var code = 17 + "Verification".##
+    code = 37 * code + op.##
+    code = 37 * code + info.##
+    code = 37 * code + clk.##
+    code = 37 * code + pred.##
+    code = 37 * code + en.##
+    code = 37 * code + msg.##
+    code = 37 * code + name.##
+    37 * code
+  }
+
+  private def tuple = (op, info, clk, pred, en, msg, name)
+
+  override def productArity: Int = 7
+
+  override def productElement(n: Int): Any = n match {
+    case 0 => this.op
+    case 1 => this.info
+    case 2 => this.clk
+    case 3 => this.pred
+    case 4 => this.en
+    case 5 => this.msg
+    case 6 => this.name
+    case _ => throw new IndexOutOfBoundsException(n.toString)
+  }
 }
 object Verification {
+  def apply(op: Formal.Value, info: Info, clk: Expression, pred: Expression, en: Expression, msg: StringLit): Verification =
+    new Verification(op, info, clk, pred, en, msg)
+
+  def apply(op: Formal.Value, info: Info, clk: Expression, pred: Expression, en: Expression, msg: StringLit, name: String): Verification =
+    new Verification(op, info, clk, pred, en, msg, name)
+
   def unapply(s: Verification): Some[(Formal.Value, Info, Expression, Expression, Expression, StringLit)] = {
     Some((s.op, s.info, s.clk, s.pred, s.en, s.msg))
   }
@@ -406,7 +574,7 @@ object IntWidth {
   private val maxCached = 1024
   private val cache = new Array[IntWidth](maxCached + 1)
   def apply(width: BigInt): IntWidth = {
-    if (0 <= width && width <= maxCached) {
+    if (BigInt(0) <= width && width <= maxCached) {
       val i = width.toInt
       var w = cache(i)
       if (w eq null) {
@@ -470,14 +638,14 @@ case class SIntType(width: Width) extends GroundType with UseSerializer
 case class BundleType(fields: Seq[Field]) extends AggregateType with UseSerializer
 case class VectorType(tpe: Type, size: Int) extends AggregateType with UseSerializer
 case object ClockType extends GroundType with UseSerializer {
-  val width: IntWidth = IntWidth(1)
+  val width: IntWidth = IntWidth(BigInt(1))
 }
 /* Abstract reset, will be inferred to UInt<1> or AsyncReset */
 case object ResetType extends GroundType with UseSerializer {
-  val width: IntWidth = IntWidth(1)
+  val width: IntWidth = IntWidth(BigInt(1))
 }
 case object AsyncResetType extends GroundType with UseSerializer {
-  val width: IntWidth = IntWidth(1)
+  val width: IntWidth = IntWidth(BigInt(1))
 }
 case class AnalogType(width: Width) extends GroundType with UseSerializer
 case object UnknownType extends Type with UseSerializer
