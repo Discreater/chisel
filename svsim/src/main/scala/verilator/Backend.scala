@@ -20,7 +20,7 @@ object Backend {
     disabledWarnings:           Seq[String] = Seq(),
     disableFatalExitOnWarnings: Boolean = false)
 
-  def initializeFromProcessEnvironment() = {
+  def initializeFromProcessEnvironment(): Backend = {
     val process = Runtime.getRuntime().exec(Array("which", "verilator"))
     val outputReader = new BufferedReader(new InputStreamReader(process.getInputStream()))
     val executablePath = outputReader.lines().findFirst().get()

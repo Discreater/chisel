@@ -166,7 +166,7 @@ object Simulation {
 
     private val expectations: Queue[PartialFunction[Simulation.Message, Unit]] = Queue.empty
 
-    def completeInFlightCommands() = {
+    def completeInFlightCommands(): Unit = {
       commandWriter.flush()
 
       expectations.foreach { f =>
@@ -284,7 +284,7 @@ object Simulation {
       }
     }
 
-    def run(timesteps: Int) = {
+    def run(timesteps: Int): Any = {
       sendCommand(Simulation.Command.Run(timesteps))
       expectNextMessage { case Simulation.Message.Ack => }
     }
@@ -341,7 +341,7 @@ object Simulation {
 
   final case class Port private[Simulation] (controller: Simulation.Controller, id: String, info: ModuleInfo.Port) {
 
-    def set(value: BigInt) = {
+    def set(value: BigInt): Any = {
       controller.sendCommand(Simulation.Command.SetBits(id, value))
       controller.expectNextMessage {
         case Simulation.Message.Ack =>
@@ -356,7 +356,7 @@ object Simulation {
       }
     }
 
-    def tick(timestepsPerPhase: Int, cycles: Int, inPhaseValue: BigInt, outOfPhaseValue: BigInt) = {
+    def tick(timestepsPerPhase: Int, cycles: Int, inPhaseValue: BigInt, outOfPhaseValue: BigInt): Any = {
       controller.sendCommand(
         Simulation.Command.Tick(id, inPhaseValue, outOfPhaseValue, timestepsPerPhase, cycles, None)
       )
@@ -388,7 +388,7 @@ object Simulation {
       outOfPhaseValue:        BigInt,
       sentinel:               Option[(Port, BigInt)],
       checkElapsedCycleCount: (BigInt) => Unit
-    ) = {
+    ): Any = {
       controller.sendCommand(
         Simulation.Command.Tick(id, inPhaseValue, outOfPhaseValue, timestepsPerPhase, maxCycles, sentinel)
       )

@@ -67,7 +67,7 @@ object Backend {
     archOverride:                Option[String] = None,
     waitForLicenseIfUnavailable: Boolean = false)
 
-  def initializeFromProcessEnvironment() = {
+  def initializeFromProcessEnvironment(): Option[Backend] = {
     (sys.env.get("VCS_HOME"), sys.env.get("LM_LICENSE_FILE")) match {
       case (Some(vcsHome), Some(lmLicenseFile)) =>
         Some(

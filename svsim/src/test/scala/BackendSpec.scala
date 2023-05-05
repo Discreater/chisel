@@ -9,8 +9,8 @@ import java.io.{BufferedReader, FileReader}
 
 class VCSSpec extends BackendSpec {
   import vcs.Backend.CompilationSettings._
-  val backend = vcs.Backend.initializeFromProcessEnvironment()
-  val compilationSettings = vcs.Backend.CompilationSettings(
+  val backend: Option[vcs.Backend] = vcs.Backend.initializeFromProcessEnvironment()
+  val compilationSettings: svsim.vcs.Backend.CompilationSettings = vcs.Backend.CompilationSettings(
     traceSettings = TraceSettings(
       enableVcd = true
     ),
@@ -25,8 +25,8 @@ class VCSSpec extends BackendSpec {
 
 class VerilatorSpec extends BackendSpec {
   import verilator.Backend.CompilationSettings._
-  val backend = verilator.Backend.initializeFromProcessEnvironment()
-  val compilationSettings = verilator.Backend.CompilationSettings(
+  val backend: verilator.Backend = verilator.Backend.initializeFromProcessEnvironment()
+  val compilationSettings: svsim.verilator.Backend.CompilationSettings = verilator.Backend.CompilationSettings(
     traceStyle = Some(TraceStyle.Vcd(traceUnderscore = false))
   )
   test("verilator", backend)(compilationSettings)
@@ -37,7 +37,7 @@ trait BackendSpec extends AnyFunSpec with Matchers {
     name:                String,
     backend:             Backend
   )(compilationSettings: backend.CompilationSettings
-  ) = {
+  ): Unit = {
     describe(s"Svsim backend '$name'") {
       val workspace = new svsim.Workspace(path = s"test_run_dir/${getClass().getSimpleName()}")
       var simulation: Simulation = null

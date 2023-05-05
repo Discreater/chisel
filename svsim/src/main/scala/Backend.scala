@@ -50,7 +50,7 @@ object CommonCompilationSettings {
     case class UpTo(value: Int) extends AvailableParallelism
   }
 
-  val default = CommonCompilationSettings()
+  val default: CommonCompilationSettings = CommonCompilationSettings()
 
   sealed trait Timescale
   object Timescale {

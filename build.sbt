@@ -39,7 +39,7 @@ emitVersion := {
 lazy val minimalSettings = Seq(
   organization := "org.chipsalliance",
   scalacOptions := Seq("-deprecation", "-feature"),
-  scalaVersion := "2.13.10",
+  scalaVersion := "3.2.2",
   crossScalaVersions := Seq("2.13.10", "2.12.17", "3.2.2")
 )
 
@@ -168,7 +168,7 @@ lazy val firrtlSettings = Seq(
     if (isScala3.value) Seq()
     else Seq("-Yrangepos")
   ),
-  semanticdbEnabled := true,
+//  semanticdbEnabled := true,
   // Always target Java8 for maximum compatibility
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
   libraryDependencies ++= Seq(
@@ -239,7 +239,7 @@ lazy val svsim = (project in file("svsim"))
     publish / skip := true,
     libraryDependencies ++= Seq(
       "org.scalatest" %% "scalatest" % "3.2.15" % "test",
-      "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % "test"
+      "org.scalatestplus" %% "scalacheck-1-15" % "3.2.11.0" % "test"
     )
   )
 
@@ -272,7 +272,7 @@ lazy val chiselSettings = Seq(
   name := "chisel",
   libraryDependencies ++= Seq(
     "org.scalatest" %% "scalatest" % "3.2.15" % "test",
-    "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % "test",
+    "org.scalatestplus" %% "scalacheck-1-15" % "3.2.11.0" % "test",
     "com.lihaoyi" %% "upickle" % "2.0.0"
   )
 ) ++ (
