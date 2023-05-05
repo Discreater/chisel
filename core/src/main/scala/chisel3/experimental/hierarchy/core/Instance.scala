@@ -7,7 +7,6 @@ import chisel3._
 import chisel3.experimental.hierarchy.{InstantiableClone, ModuleClone}
 import chisel3.internal.{throwException, Builder}
 import chisel3.experimental.{BaseModule, ExtModule, SourceInfo}
-import chisel3.internal.sourceinfo.InstanceTransform
 import chisel3.internal.firrtl.{Component, DefBlackBox, DefModule, Port}
 import firrtl.annotations.IsModule
 
@@ -19,7 +18,7 @@ import scala.annotation.nowarn
   *
   * @param underlying The internal representation of the instance, which may be either be directly the object, or a clone of an object
   */
-final case class Instance[+A] private[chisel3] (private[chisel3] underlying: Underlying[A]) extends SealedHierarchy[A] {
+final case class Instance[+A] private[chisel3] (private[chisel3] val underlying: Underlying[A]) extends SealedHierarchy[A] {
   underlying match {
     case Proto(p: IsClone[_]) => chisel3.internal.throwException("Cannot have a Proto with a clone!")
     case other => //Ok
@@ -99,8 +98,10 @@ object Instance extends SourceInfoDoc {
     * @param definition the Module being created
     * @return an instance of the module definition
     */
-  def apply[T <: BaseModule with IsInstantiable](definition: Definition[T]): Instance[T] =
-    macro InstanceTransform.apply[T]
+  inline def apply[T <: BaseModule with IsInstantiable](inline definition: Definition[T]): Instance[T] ={
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_apply(definition)
+  }
 
   /** A constructs an [[Instance]] from a [[Definition]]
     *

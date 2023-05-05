@@ -9,7 +9,7 @@ import firrtl.{ir => fir}
 import chisel3.internal._
 import chisel3.internal.Builder.pushCommand
 import chisel3.internal.firrtl._
-import chisel3.internal.sourceinfo.{MemTransform, SourceInfoTransform}
+import chisel3.internal.sourceinfo.{SourceInfoTransform}
 import chisel3.experimental.{SourceInfo, SourceLine}
 
 object Mem {
@@ -19,14 +19,20 @@ object Mem {
     * @param size number of elements in the memory
     * @param t data type of memory element
     */
-  def apply[T <: Data](size: BigInt, t: T): Mem[T] = macro MemTransform.apply[T]
+  inline def apply[T <: Data](inline size: BigInt, inline t: T): Mem[T] ={
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_apply(size, t)
+  }
 
   /** Creates a combinational/asynchronous-read, sequential/synchronous-write [[Mem]].
     *
     * @param size number of elements in the memory
     * @param t data type of memory element
     */
-  def apply[T <: Data](size: Int, t: T): Mem[T] = macro MemTransform.apply[T]
+  inline def apply[T <: Data](inline size: Int, inline t: T): Mem[T] = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_apply(size, t)
+  }
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](
@@ -316,16 +322,28 @@ object SyncReadMem {
     * @param size number of elements in the memory
     * @param t data type of memory element
     */
-  def apply[T <: Data](size: BigInt, t: T): SyncReadMem[T] = macro MemTransform.apply[T]
-  def apply[T <: Data](size: BigInt, t: T, ruw: ReadUnderWrite): SyncReadMem[T] = macro MemTransform.apply_ruw[T]
+  inline def apply[T <: Data](inline size: BigInt, inline t: T): SyncReadMem[T] = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_apply(size, t)
+  }
+  inline def apply[T <: Data](inline size: BigInt, inline t: T, inline ruw: ReadUnderWrite): SyncReadMem[T] = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_apply(size, t, ruw)
+  }
 
   /** Creates a sequential/synchronous-read, sequential/synchronous-write [[SyncReadMem]].
     *
     * @param size number of elements in the memory
     * @param t data type of memory element
     */
-  def apply[T <: Data](size: Int, t: T): SyncReadMem[T] = macro MemTransform.apply[T]
-  def apply[T <: Data](size: Int, t: T, ruw: ReadUnderWrite): SyncReadMem[T] = macro MemTransform.apply_ruw[T]
+  inline def apply[T <: Data](inline size: Int, inline t: T): SyncReadMem[T] = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_apply(size, t)
+  }
+  inline def apply[T <: Data](inline size: Int, inline t: T, inline ruw: ReadUnderWrite): SyncReadMem[T] = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_apply(size, t, ruw)
+  }
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](

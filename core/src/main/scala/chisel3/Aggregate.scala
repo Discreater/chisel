@@ -13,7 +13,7 @@ import chisel3.experimental.{SourceInfo, UnlocatableSourceInfo}
 import chisel3.internal._
 import chisel3.internal.Builder.pushCommand
 import chisel3.internal.firrtl._
-import chisel3.internal.sourceinfo.{SourceInfoTransform, VecTransform}
+import chisel3.internal.sourceinfo.{SourceInfoTransform}
 
 import java.lang.Math.{floor, log10, pow}
 import scala.collection.mutable
@@ -363,7 +363,10 @@ sealed class Vec[T <: Data] private[chisel3] (gen: => T, val length: Int) extend
     * val sumOut = inputNums.reduceTree((a: T, b: T) => (a + b))
     * }}}
     */
-  def reduceTree(redOp: (T, T) => T): T = macro VecTransform.reduceTreeDefault
+  inline def reduceTree(inline redOp: (T, T) => T): T = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_reduceTree(redOp)
+  }
 
   /** A reduce operation in a tree like structure instead of sequentially
     * @example A pipelined adder tree
@@ -374,7 +377,10 @@ sealed class Vec[T <: Data] private[chisel3] (gen: => T, val length: Int) extend
     * )
     * }}}
     */
-  def reduceTree(redOp: (T, T) => T, layerOp: (T) => T): T = macro VecTransform.reduceTree
+  inline def reduceTree(inline redOp: (T, T) => T, inline layerOp: (T) => T): T = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_reduceTree(redOp, layerOp)
+  }
 
   def do_reduceTree(
     redOp:   (T, T) => T,
@@ -610,7 +616,10 @@ object VecInit extends SourceInfoDoc {
     * element
     * @note output elements are connected from the input elements
     */
-  def apply[T <: Data](elts: Seq[T]): Vec[T] = macro VecTransform.apply_elts
+  inline def apply[T <: Data](inline elts: Seq[T]): Vec[T] ={
+    given sourceInfo: SourceInfo = summonInlin[SourceInfo]
+    do_apply(elts)
+  }
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](elts: Seq[T])(implicit sourceInfo: SourceInfo): Vec[T] = {
@@ -642,7 +651,10 @@ object VecInit extends SourceInfoDoc {
     * element
     * @note output elements are connected from the input elements
     */
-  def apply[T <: Data](elt0: T, elts: T*): Vec[T] = macro VecTransform.apply_elt0
+  inline def apply[T <: Data](inline elt0: T, inline elts: T*): Vec[T] = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_apply(elt0, elts*)
+  }
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](elt0: T, elts: T*)(implicit sourceInfo: SourceInfo): Vec[T] =
@@ -656,7 +668,10 @@ object VecInit extends SourceInfoDoc {
     * @param gen function that takes in an Int (the index) and returns a
     * [[Data]] that becomes the output element
     */
-  def tabulate[T <: Data](n: Int)(gen: (Int) => T): Vec[T] = macro VecTransform.tabulate
+  inline def tabulate[T <: Data](inline n: Int)(inline gen: (Int) => T): Vec[T] ={
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_tabulate(n)(gen)
+  }
 
   /** @group SourceInfoTransformMacro */
   def do_tabulate[T <: Data](
@@ -676,7 +691,10 @@ object VecInit extends SourceInfoDoc {
     * @param gen function that takes in an Int (the index) and returns a
     * [[Data]] that becomes the output element
     */
-  def tabulate[T <: Data](n: Int, m: Int)(gen: (Int, Int) => T): Vec[Vec[T]] = macro VecTransform.tabulate2D
+  inline def tabulate[T <: Data](inline n: Int, inline m: Int)(inline gen: (Int, Int) => T): Vec[Vec[T]] = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_tabulate(n, m)(gen)
+  }
 
   /** @group SourceInfoTransformMacro */
   def do_tabulate[T <: Data](
@@ -714,8 +732,10 @@ object VecInit extends SourceInfoDoc {
     * @param gen function that takes in an Int (the index) and returns a
     * [[Data]] that becomes the output element
     */
-  def tabulate[T <: Data](n: Int, m: Int, p: Int)(gen: (Int, Int, Int) => T): Vec[Vec[Vec[T]]] =
-    macro VecTransform.tabulate3D
+  inline def tabulate[T <: Data](inline n: Int, inline m: Int, inline p: Int)(inline gen: (Int, Int, Int) => T): Vec[Vec[Vec[T]]] = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_tabulate(n, m, p)(gen)
+  }
 
   /** @group SourceInfoTransformMacro */
   def do_tabulate[T <: Data](
@@ -755,7 +775,10 @@ object VecInit extends SourceInfoDoc {
     * @param gen function that takes in an element T and returns an output
     * element of the same type
     */
-  def fill[T <: Data](n: Int)(gen: => T): Vec[T] = macro VecTransform.fill
+  inline def fill[T <: Data](inline n: Int)(inline gen: => T): Vec[T] = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_fill(n)(gen)
+  }
 
   /** @group SourceInfoTransformMacro */
   def do_fill[T <: Data](n: Int)(gen: => T)(implicit sourceInfo: SourceInfo): Vec[T] =
@@ -770,7 +793,10 @@ object VecInit extends SourceInfoDoc {
     * @param gen function that takes in an element T and returns an output
     * element of the same type
     */
-  def fill[T <: Data](n: Int, m: Int)(gen: => T): Vec[Vec[T]] = macro VecTransform.fill2D
+  inline def fill[T <: Data](inline n: Int, inline m: Int)(gen: => T): Vec[Vec[T]] = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_fill(n, m)(gen)
+  }
 
   /** @group SourceInfoTransformMacro */
   def do_fill[T <: Data](
@@ -792,7 +818,10 @@ object VecInit extends SourceInfoDoc {
     * @param gen function that takes in an element T and returns an output
     * element of the same type
     */
-  def fill[T <: Data](n: Int, m: Int, p: Int)(gen: => T): Vec[Vec[Vec[T]]] = macro VecTransform.fill3D
+  inline def fill[T <: Data](inline n: Int, inline m: Int, inline p: Int)(gen: => T): Vec[Vec[Vec[T]]] = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_fill(n, m, p)(gen)
+  }
 
   /** @group SourceInfoTransformMacro */
   def do_fill[T <: Data](
@@ -814,7 +843,10 @@ object VecInit extends SourceInfoDoc {
     * @param f Function that applies the element T from previous index and returns the output
     * element to the next index
     */
-  def iterate[T <: Data](start: T, len: Int)(f: (T) => T): Vec[T] = macro VecTransform.iterate
+  inline def iterate[T <: Data](inline start: T, inline len: Int)(inline f: (T) => T): Vec[T] =  {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_iterate(start, len)(f)
+  }
 
   /** @group SourceInfoTransformMacro */
   def do_iterate[T <: Data](
@@ -856,7 +888,10 @@ trait VecLike[T <: Data] extends IndexedSeq[T] with HasId with SourceInfoDoc {
   /** Outputs true if the vector contains at least one element equal to x (using
     * the === operator).
     */
-  def contains(x: T)(implicit ev: T <:< UInt): Bool = macro VecTransform.contains
+  inline def contains(inline x: T)(implicit ev: T <:< UInt): Bool = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_contains(x)
+  }
 
   /** @group SourceInfoTransformMacro */
   def do_contains(x: T)(implicit sourceInfo: SourceInfo, ev: T <:< UInt): Bool =

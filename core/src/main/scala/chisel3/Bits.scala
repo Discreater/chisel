@@ -11,7 +11,6 @@ import chisel3.internal.sourceinfo.{
   IntLiteralApplyTransform,
   SourceInfoTransform,
   SourceInfoWhiteboxTransform,
-  UIntTransform
 }
 import chisel3.internal.firrtl.PrimOp._
 import _root_.firrtl.{ir => firrtlir}
@@ -715,10 +714,13 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * @return a hrdware $coll with bit `off` set or cleared based on the value of `dat`
     * $unchangedWidth
     */
-  final def bitSet(off: UInt, dat: Bool): UInt = macro UIntTransform.bitset
+  final inline def bitSet(inline off: UInt, inline dat: Bool): UInt = {
+    val sourceInfo = summonInline[SourceInfo]
+    this.do_bitSet(off, dat)(sourceInfo)
+  }
 
   /** @group SourceInfoTransformMacro */
-  def do_bitSet(off: UInt, dat: Bool)(implicit sourceInfo: SourceInfo): UInt = {
+  def do_bitSet(off: UInt, dat: Bool)(using sourceInfo: SourceInfo): UInt = {
     val bit = 1.U(1.W) << off
     Mux(dat, this | bit, ~(~this | bit))
   }

@@ -7,7 +7,6 @@ import chisel3._
 
 import scala.collection.mutable.HashMap
 import chisel3.internal.{Builder, DynamicContext}
-import chisel3.internal.sourceinfo.{DefinitionTransform, DefinitionWrapTransform}
 import chisel3.experimental.{BaseModule, SourceInfo}
 import firrtl.annotations.{IsModule, ModuleTarget, NoTargetAnnotation}
 
@@ -21,7 +20,7 @@ import scala.annotation.nowarn
   *
   * @param underlying The internal representation of the definition, which may be either be directly the object, or a clone of an object
   */
-final case class Definition[+A] private[chisel3] (private[chisel3] underlying: Underlying[A])
+final case class Definition[+A] private[chisel3] (private[chisel3] val underlying: Underlying[A])
     extends IsLookupable
     with SealedHierarchy[A] {
 
@@ -86,7 +85,10 @@ object Definition extends SourceInfoDoc {
     *
     * @return the input module as a Definition
     */
-  def apply[T <: BaseModule with IsInstantiable](proto: => T): Definition[T] = macro DefinitionTransform.apply[T]
+  inline def apply[T <: BaseModule with IsInstantiable](inline proto: => T): Definition[T] = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_apply(proto)
+  }
 
   /** A construction method to build a Definition of a Module
     *

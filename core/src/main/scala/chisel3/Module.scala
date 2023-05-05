@@ -10,7 +10,6 @@ import chisel3.internal._
 import chisel3.internal.Builder._
 import chisel3.internal.firrtl._
 import chisel3.experimental.{BaseModule, SourceInfo, UnlocatableSourceInfo}
-import chisel3.internal.sourceinfo.{InstTransform}
 import _root_.firrtl.annotations.{IsModule, ModuleName, ModuleTarget}
 import _root_.firrtl.AnnotationSeq
 
@@ -23,7 +22,10 @@ object Module extends SourceInfoDoc {
     *
     * @return the input module `m` with Chisel metadata properly set
     */
-  def apply[T <: BaseModule](bc: => T): T = macro InstTransform.apply[T]
+  inline def apply[T <: BaseModule](inline bc: => T): T = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_apply(bc)
+  }
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: BaseModule](bc: => T)(implicit sourceInfo: SourceInfo): T = {
