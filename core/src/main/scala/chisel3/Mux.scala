@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 package chisel3
+import scala.compiletime.summonInline
 
 import scala.language.experimental.macros
 
 import chisel3.internal._
 import chisel3.internal.Builder.pushOp
 import chisel3.experimental.{requireIsHardware, SourceInfo}
+import chisel3.internal.sourceinfo.MuxTransform
 import chisel3.internal.firrtl._
 import chisel3.internal.firrtl.PrimOp._
 
@@ -23,10 +25,7 @@ object Mux extends SourceInfoDoc {
     * val muxOut = Mux(data_in === 3.U, 3.U(4.W), 0.U(4.W))
     * }}}
     */
-  inline def apply[T <: Data](inline cond: Bool, inline con: T, inline alt: T): T = {
-    given sourceInfo: SourceInfo = summonInline[SourceInfo]
-    do_apply(cond, con, alt)
-  }
+  def apply[T <: Data](cond: Bool, con: T, alt: T): T = macro MuxTransform.apply[T]
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 package chisel3.experimental.hierarchy.core
+import scala.compiletime.summonInline
 
 import scala.language.experimental.macros
 import chisel3._
@@ -98,10 +99,8 @@ object Instance extends SourceInfoDoc {
     * @param definition the Module being created
     * @return an instance of the module definition
     */
-  inline def apply[T <: BaseModule with IsInstantiable](inline definition: Definition[T]): Instance[T] ={
-    given sourceInfo: SourceInfo = summonInline[SourceInfo]
-    do_apply(definition)
-  }
+  def apply[T <: BaseModule with IsInstantiable](definition: Definition[T]): Instance[T] =
+    macro InstanceTransform.apply[T]
 
   /** A constructs an [[Instance]] from a [[Definition]]
     *

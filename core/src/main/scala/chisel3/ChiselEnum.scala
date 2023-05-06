@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 package chisel3
+import scala.compiletime.summonInline
 
 import scala.language.experimental.macros
 import scala.language.existentials
@@ -52,12 +53,12 @@ abstract class EnumType(private[chisel3] val factory: ChiselEnum, selfAnnotating
     this := factory.apply(that.asUInt)
   }
 
-  final inline def ===(that: EnumType): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_===(that)}
-  final inline def =/=(that: EnumType): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_=/=(that)}
-  final inline def <(that:   EnumType): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_<(that)}
-  final inline def <=(that:  EnumType): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_<=(that)}
-  final inline def >(that:   EnumType): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_>(that)}
-  final inline def >=(that:  EnumType): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_>=(that)}
+  final def ===(that: EnumType): Bool = macro SourceInfoTransform.thatArg
+  final def =/=(that: EnumType): Bool = macro SourceInfoTransform.thatArg
+  final def <(that:   EnumType): Bool = macro SourceInfoTransform.thatArg
+  final def <=(that:  EnumType): Bool = macro SourceInfoTransform.thatArg
+  final def >(that:   EnumType): Bool = macro SourceInfoTransform.thatArg
+  final def >=(that:  EnumType): Bool = macro SourceInfoTransform.thatArg
 
   def do_===(that: EnumType)(implicit sourceInfo: SourceInfo): Bool =
     compop(sourceInfo, EqualOp, that)

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 package chisel3
+import scala.compiletime.summonInline
 
 import chisel3._
 import chisel3.internal._
@@ -42,10 +43,7 @@ package object probe extends SourceInfoDoc {
   }
 
   /** Access the value of a probe. */
-  inline def read[T <: Data](inline source: T): T = {
-    given sourceInfo: SourceInfo = summonInline[SourceInfo]
-    do_read(source)
-  }
+  def read[T <: Data](source: T): T = macro chisel3.internal.sourceinfo.ProbeTransform.sourceRead[T]
 
   /** @group SourceInfoTransformMacro */
   def do_read[T <: Data](source: T)(implicit sourceInfo: SourceInfo): T = {

@@ -4,6 +4,7 @@
   */
 
 package chisel3.util
+import scala.compiletime.summonInline
 
 import chisel3._
 import chisel3.experimental.SourceInfo
@@ -27,10 +28,7 @@ object FillInterleaved {
     *
     * Output data-equivalent to in(size(in)-1) (n times) ## ... ## in(1) (n times) ## in(0) (n times)
     */
-  inline def apply(n: Int, in: UInt): UInt = {
-    given sourceInfo: SourceInfo = summonInline[SourceInfo]
-    do_apply(n, in)
-  }
+  def apply(n: Int, in: UInt): UInt = macro SourceInfoTransform.nInArg
 
   /** @group SourceInfoTransformMacro */
   def do_apply(n: Int, in: UInt)(implicit sourceInfo: SourceInfo): UInt =
@@ -40,10 +38,7 @@ object FillInterleaved {
     *
     * Output data-equivalent to in(size(in)-1) (n times) ## ... ## in(1) (n times) ## in(0) (n times)
     */
-  inline def apply(n: Int, in: Seq[Bool]): UInt = {
-    given sourceInfo: SourceInfo = summonInline[SourceInfo]
-    do_apply(n, in)
-  }
+  def apply(n: Int, in: Seq[Bool]): UInt = macro SourceInfoTransform.nInArg
 
   /** @group SourceInfoTransformMacro */
   def do_apply(n: Int, in: Seq[Bool])(implicit sourceInfo: SourceInfo): UInt =
@@ -70,14 +65,14 @@ object FillInterleaved {
   */
 object PopCount {
 
-  inline def apply(in: Iterable[Bool]): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(in)}
+  def apply(in: Iterable[Bool]): UInt = macro SourceInfoTransform.inArg
 
   /** @group SourceInfoTransformMacro */
   def do_apply(in: Iterable[Bool])(implicit sourceInfo: SourceInfo): UInt = _apply_impl(
     in.toSeq
   )
 
-  inline def apply(in: Bits): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(in)}
+  def apply(in: Bits): UInt = macro SourceInfoTransform.inArg
 
   /** @group SourceInfoTransformMacro */
   def do_apply(in: Bits)(implicit sourceInfo: SourceInfo): UInt = _apply_impl(
@@ -103,7 +98,7 @@ object Fill {
     * Output data-equivalent to x ## x ## ... ## x (n repetitions).
     * @throws java.lang.IllegalArgumentException if `n` is less than zero
     */
-  inline def apply(n: Int, x: UInt): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(n, x)}
+  def apply(n: Int, x: UInt): UInt = macro SourceInfoTransform.nxArg
 
   /** @group SourceInfoTransformMacro */
   def do_apply(n: Int, x: UInt)(implicit sourceInfo: SourceInfo): UInt = {
@@ -154,7 +149,7 @@ object Reverse {
         Cat(doit(in(half - 1, 0), half), doit(in(length - 1, half), length - half))
     }
 
-  inline def apply(in: UInt): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(in)}
+  def apply(in: UInt): UInt = macro SourceInfoTransform.inArg
 
   /** @group SourceInfoTransformMacro */
   def do_apply(in: UInt)(implicit sourceInfo: SourceInfo): UInt = doit(in, in.getWidth)

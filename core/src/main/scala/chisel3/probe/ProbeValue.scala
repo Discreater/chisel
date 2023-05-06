@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 package chisel3.probe
+import scala.compiletime.summonInline
 
 import chisel3.{Data, SourceInfoDoc}
 import chisel3.internal.{Builder, OpBinding}
@@ -27,10 +28,7 @@ private[chisel3] sealed trait ProbeValueBase {
 object ProbeValue extends ProbeValueBase with SourceInfoDoc {
 
   /** Create a read-only probe expression. */
-  inline def apply[T <: Data](inline source: T): T ={
-    given sourceInfo: SourceInfo = summonInline[SourceInfo]
-    do_apply(source)
-  }
+  def apply[T <: Data](source: T): T = macro chisel3.internal.sourceinfo.ProbeTransform.sourceApply[T]
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](source: T)(implicit sourceInfo: SourceInfo): T = super.apply(source, writable = false)
@@ -39,10 +37,7 @@ object ProbeValue extends ProbeValueBase with SourceInfoDoc {
 object RWProbeValue extends ProbeValueBase with SourceInfoDoc {
 
   /** Create a read/write probe expression. */
-  inline def apply[T <: Data](inline source: T): T ={
-    given sourceInfo: SourceInfo = summonInline[SourceInfo]
-    do_apply(source)
-  }
+  def apply[T <: Data](source: T): T = macro chisel3.internal.sourceinfo.ProbeTransform.sourceApply[T]
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](source: T)(implicit sourceInfo: SourceInfo): T = super.apply(source, writable = true)

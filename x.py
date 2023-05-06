@@ -31,7 +31,7 @@ def main():
                 min_l = [i for i in [first_par, first_sq, first_co] if i != -1]
                 name_last = min(min_l)
                 fun_name = fun[4:name_last]
-                new_fun = 'inline ' + fun[:-len(sf)] + '{given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_'+fun_name
+                new_fun = 'inline ' + fun[:-len(sf)] + '{implicit val sourceInfo: SourceInfo = summonInline[SourceInfo]; do_'+fun_name
                 if len(params) != 0:
                     new_fun += '('+dot_params+')}'
                 else:

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 package chisel3.util
+import scala.compiletime.summonInline
 
 import scala.language.experimental.macros
 import chisel3._
@@ -321,8 +322,8 @@ sealed class BitPat(val value: BigInt, val mask: BigInt, val width: Int)
     * Get specified width of said BitPat
     */
   override def getWidth: Int = width
-  inline def apply(x:  Int): BitPat = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(x)}
-  inline def apply(x:  Int, y: Int): BitPat = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(x, y)}
+  def apply(x:  Int): BitPat = macro SourceInfoTransform.xArg
+  def apply(x:  Int, y: Int): BitPat = macro SourceInfoTransform.xyArg
   def ===(that: UInt):   Bool = macro SourceInfoTransform.thatArg
   def =/=(that: UInt):   Bool = macro SourceInfoTransform.thatArg
   def ##(that:  BitPat): BitPat = macro SourceInfoTransform.thatArg

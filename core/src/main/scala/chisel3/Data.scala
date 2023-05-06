@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 package chisel3
+import scala.compiletime.summonInline
 
 import chisel3.experimental.dataview.reify
 
@@ -798,7 +799,7 @@ abstract class Data extends HasId with NamedComponent with SourceInfoDoc {
     * @note bit widths are NOT checked, may pad or drop bits from input
     * @note that should have known widths
     */
-  inline def asTypeOf[T <: Data](that: T): T = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_asTypeOf(that)}
+  def asTypeOf[T <: Data](that: T): T = macro SourceInfoTransform.thatArg
 
   /** @group SourceInfoTransformMacro */
   def do_asTypeOf[T <: Data](that: T)(implicit sourceInfo: SourceInfo): T = {
@@ -822,7 +823,7 @@ abstract class Data extends HasId with NamedComponent with SourceInfoDoc {
     * @note Aggregates are recursively packed with the first element appearing
     * in the least-significant bits of the result.
     */
-  final inline def asUInt: UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_asUInt}
+  final def asUInt: UInt = macro SourceInfoTransform.noArg
 
   /** @group SourceInfoTransformMacro */
   def do_asUInt(implicit sourceInfo: SourceInfo): UInt

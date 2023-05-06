@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 package chisel3
+import scala.compiletime.summonInline
 
 import chisel3.experimental.{prefix, SourceInfo}
 import chisel3.internal.throwException
@@ -18,7 +19,7 @@ private[chisel3] object SeqUtils {
     * Equivalent to r(n-1) ## ... ## r(1) ## r(0).
     * @note This returns a `0.U` if applied to a zero-element `Vec`.
     */
-  inline def asUInt[T <: Bits](in: Seq[T]): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_asUInt(in)}
+  def asUInt[T <: Bits](in: Seq[T]): UInt = macro SourceInfoTransform.inArg
 
   /** @group SourceInfoTransformMacros */
   def do_asUInt[T <: Bits](in: Seq[T])(implicit sourceInfo: SourceInfo): UInt = {
@@ -39,7 +40,7 @@ private[chisel3] object SeqUtils {
 
   /** Outputs the number of elements that === true.B.
     */
-  inline def count(in: Seq[Bool]): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_count(in)}
+  def count(in: Seq[Bool]): UInt = macro SourceInfoTransform.inArg
 
   /** @group SourceInfoTransformMacros */
   def do_count(in: Seq[Bool])(implicit sourceInfo: SourceInfo): UInt = in.size match {
@@ -52,7 +53,7 @@ private[chisel3] object SeqUtils {
 
   /** Returns the data value corresponding to the first true predicate.
     */
-  inline def priorityMux[T <: Data](in: Seq[(Bool, T)]): T = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_priorityMux(in)}
+  def priorityMux[T <: Data](in: Seq[(Bool, T)]): T = macro SourceInfoTransform.inArg
 
   /** @group SourceInfoTransformMacros */
   def do_priorityMux[T <: Data](
@@ -75,7 +76,7 @@ private[chisel3] object SeqUtils {
     *
     * @note assumes exactly one true predicate, results undefined otherwise
     */
-  inline def oneHotMux[T <: Data](in: Iterable[(Bool, T)]): T = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_oneHotMux(in)}
+  def oneHotMux[T <: Data](in: Iterable[(Bool, T)]): T = macro SourceInfoTransform.inArg
 
   /** @group SourceInfoTransformMacros */
   def do_oneHotMux[T <: Data](

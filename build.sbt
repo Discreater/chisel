@@ -388,8 +388,11 @@ lazy val core = (project in file("core"))
       "-language:reflectiveCalls",
       "-unchecked",
       "-Xcheckinit",
-      "-Xlint:infer-any"
+      "-Xlint:infer-any",
 //      , "-Xlint:missing-interpolator"
+      "-new-syntax",
+      "-rewrite",
+      "-source 3.0-migration",
     )
   )
   .dependsOn(macros)

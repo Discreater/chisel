@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 package chisel3
+import scala.compiletime.summonInline
 
 import scala.language.experimental.macros
 import chisel3.experimental.SourceInfo
@@ -31,7 +32,7 @@ sealed class Clock(private[chisel3] val width: Width = Width(1)) extends Element
   def toPrintable: Printable = PString("CLOCK")
 
   /** Returns the contents of the clock wire as a [[Bool]]. */
-  final inline def asBool: Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_asBool}
+  final def asBool: Bool = macro SourceInfoTransform.noArg
 
   def do_asBool(implicit sourceInfo: SourceInfo): Bool = this.asUInt.asBool
 

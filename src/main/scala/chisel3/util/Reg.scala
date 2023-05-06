@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 package chisel3.util
+import scala.compiletime.summonInline
 
 import scala.language.experimental.macros
 
@@ -16,10 +17,7 @@ object RegEnable {
     * val regWithEnable = RegEnable(nextVal, ena)
     * }}}
     */
-  inline def apply[T <: Data](next: T, enable: Bool): T = {
-    given sourceInfo: SourceInfo = summonInline[SourceInfo]
-    do_apply(next, enable)
-  }
+  def apply[T <: Data](next: T, enable: Bool): T = macro SourceInfoTransform.nextEnableArg
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](next: T, enable: Bool)(implicit sourceInfo: SourceInfo): T = {
@@ -34,10 +32,7 @@ object RegEnable {
     * val regWithEnableAndReset = RegEnable(nextVal, 0.U, ena)
     * }}}
     */
-  inline def apply[T <: Data](next: T, init: T, enable: Bool): T = {
-    given sourceInfo: SourceInfo = summonInline[SourceInfo]; 
-    do_apply(next, init, enable)
-  }
+  def apply[T <: Data](next: T, init: T, enable: Bool): T = macro SourceInfoTransform.nextInitEnableArg
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](
@@ -65,7 +60,7 @@ object ShiftRegister {
     * val regDelayTwo = ShiftRegister(nextVal, 2, ena)
     * }}}
     */
-  inline def apply[T <: Data](in: T, n: Int, en: Bool): T = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(in, n, en)}
+  def apply[T <: Data](in: T, n: Int, en: Bool): T = macro SourceInfoTransform.inNEnArg
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](
@@ -88,7 +83,7 @@ object ShiftRegister {
     * val regDelayTwo = ShiftRegister(nextVal, 2)
     * }}}
     */
-  inline def apply[T <: Data](in: T, n: Int): T = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(in, n)}
+  def apply[T <: Data](in: T, n: Int): T = macro SourceInfoTransform.inNArg
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](in: T, n: Int)(implicit sourceInfo: SourceInfo): T =
@@ -114,7 +109,7 @@ object ShiftRegister {
     * val regDelayTwoReset = ShiftRegister(nextVal, 2, 0.U, ena)
     * }}}
     */
-  inline def apply[T <: Data](in: T, n: Int, resetData: T, en: Bool): T = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(in, n, resetData, en)}
+  def apply[T <: Data](in: T, n: Int, resetData: T, en: Bool): T = macro SourceInfoTransform.inNResetDataEnArg
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](
@@ -136,7 +131,7 @@ object ShiftRegisters {
     * @param n  number of cycles to delay
     * @param en enable the shift
     */
-  inline def apply[T <: Data](in: T, n: Int, en: Bool): Seq[T] = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(in, n, en)}
+  def apply[T <: Data](in: T, n: Int, en: Bool): Seq[T] = macro SourceInfoTransform.inNEnArg
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](
@@ -163,7 +158,7 @@ object ShiftRegisters {
     * @param in input to delay
     * @param n  number of cycles to delay
     */
-  inline def apply[T <: Data](in: T, n: Int): Seq[T] = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(in, n)}
+  def apply[T <: Data](in: T, n: Int): Seq[T] = macro SourceInfoTransform.inNArg
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](in: T, n: Int)(implicit sourceInfo: SourceInfo): Seq[T] =
@@ -176,7 +171,7 @@ object ShiftRegisters {
     * @param resetData reset value for each register in the shift
     * @param en        enable the shift
     */
-  inline def apply[T <: Data](in: T, n: Int, resetData: T, en: Bool): Seq[T] = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(in, n, resetData, en)}
+  def apply[T <: Data](in: T, n: Int, resetData: T, en: Bool): Seq[T] = macro SourceInfoTransform.inNResetDataEnArg
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](

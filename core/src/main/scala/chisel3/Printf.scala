@@ -7,6 +7,9 @@ import chisel3.internal.Builder.pushCommand
 import chisel3.experimental.SourceInfo
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox
+import scala.quoted.* 
+import java.awt.print.Printable
+
 
 /** Prints a message in simulation
   *
@@ -36,8 +39,40 @@ object printf {
     formatIn.map(escaped).mkString("")
   }
 
-  private[chisel3] def _checkFormatString(c: blackbox.Context)(fmt: c.Tree): Unit = {
-    import c.universe._
+  // private[chisel3] def _checkFormatString(c: blackbox.Context)(fmt: c.Tree): Unit = {
+  //   import c.universe._
+
+  //   val errorString = "The s-interpolator prints the Scala .toString of Data objects rather than the value " +
+  //     "of the hardware wire during simulation. Use the cf-interpolator instead. If you want " +
+  //     "an elaboration time print, use println."
+
+  //   // Error on Data in the AST by matching on the Scala 2.13 string
+  //   // interpolation lowering to concatenation
+  //   def throwOnChiselData(x: c.Tree): Unit = x match {
+  //     case q"$x+$y" => {
+  //       if (x.tpe <:< typeOf[chisel3.Data] || y.tpe <:< typeOf[chisel3.Data]) {
+  //         c.error(c.enclosingPosition, errorString)
+  //       } else {
+  //         throwOnChiselData(x)
+  //         throwOnChiselData(y)
+  //       }
+  //     }
+  //     case _ =>
+  //   }
+  //   throwOnChiselData(fmt)
+
+  //   fmt match {
+  //     case q"scala.StringContext.apply(..$_).s(..$_)" =>
+  //       c.error(
+  //         c.enclosingPosition,
+  //         errorString
+  //       )
+  //     case _ =>
+  //   }
+  // }
+
+  private[chisel3] def _checkFormatString(fmt: Expr[String])(using q: Quotes): Unit = {
+    import q.reflect.* 
 
     val errorString = "The s-interpolator prints the Scala .toString of Data objects rather than the value " +
       "of the hardware wire during simulation. Use the cf-interpolator instead. If you want " +
@@ -45,27 +80,12 @@ object printf {
 
     // Error on Data in the AST by matching on the Scala 2.13 string
     // interpolation lowering to concatenation
-    def throwOnChiselData(x: c.Tree): Unit = x match {
-      case q"$x+$y" => {
-        if (x.tpe <:< typeOf[chisel3.Data] || y.tpe <:< typeOf[chisel3.Data]) {
-          c.error(c.enclosingPosition, errorString)
-        } else {
-          throwOnChiselData(x)
-          throwOnChiselData(y)
-        }
-      }
-      case _ =>
-    }
-    throwOnChiselData(fmt)
-
     fmt match {
-      case q"scala.StringContext.apply(..$_).s(..$_)" =>
-        c.error(
-          c.enclosingPosition,
-          errorString
-        )
+      case '{ StringContext.apply(${Varargs(parts)}: _*).s(${Varargs(args)}: _*) } =>
+        report.error(errorString, fmt.asTerm.pos)
       case _ =>
     }
+
   }
 
   /** Named class for [[printf]]s. */
@@ -108,20 +128,25 @@ object printf {
     * @param fmt printf format string
     * @param data format string varargs containing data to print
     */
-  def apply(fmt: String, data: Bits*)(implicit sourceInfo: SourceInfo): Printf =
-    macro _applyMacroWithInterpolatorCheck
+  inline def apply(fmt: String, data: Bits*)(implicit sourceInfo: SourceInfo): Printf = ${ _applyMacroWithInterpolatorCheck('fmt, 'data, 'sourceInfo) }
 
-  def _applyMacroWithInterpolatorCheck(
-    c:          blackbox.Context
-  )(fmt:        c.Tree,
-    data:       c.Tree*
-  )(sourceInfo: c.Tree
-  ): c.Tree = {
-    import c.universe._
-    _checkFormatString(c)(fmt)
-    val apply_impl_do = symbolOf[this.type].asClass.module.info.member(TermName("printfWithReset"))
-    q"$apply_impl_do(_root_.chisel3.Printable.pack($fmt, ..$data))($sourceInfo)"
+  def _applyMacroWithInterpolatorCheck(fmt: Expr[String], data: Expr[Seq[Bits]], sourceInfo: Expr[SourceInfo])(using q: Quotes): Expr[Printf] = {
+    import q.reflect.*
+    _checkFormatString(fmt)
+    '{ printf.apply(_root_.chisel3.Printable.pack($fmt, $data*))($sourceInfo)}
   }
+
+  // def _applyMacroWithInterpolatorCheck(
+  //   c:          blackbox.Context
+  // )(fmt:        c.Tree,
+  //   data:       c.Tree*
+  // )(sourceInfo: c.Tree
+  // ): c.Tree = {
+  //   import c.universe._
+  //   _checkFormatString(c)(fmt)
+  //   val apply_impl_do = symbolOf[this.type].asClass.module.info.member(TermName("printfWithReset"))
+  //   q"$apply_impl_do(_root_.chisel3.Printable.pack($fmt, ..$data))($sourceInfo)"
+  // }
 
   /** Prints a message in simulation
     *

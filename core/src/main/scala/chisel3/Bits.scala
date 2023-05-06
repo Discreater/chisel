@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 package chisel3
+import scala.compiletime.summonInline
 
 import scala.language.experimental.macros
 import chisel3.experimental.{requireIsHardware, SourceInfo}
@@ -11,6 +12,7 @@ import chisel3.internal.sourceinfo.{
   IntLiteralApplyTransform,
   SourceInfoTransform,
   SourceInfoWhiteboxTransform,
+  UIntTransform
 }
 import chisel3.internal.firrtl.PrimOp._
 import _root_.firrtl.{ir => firrtlir}
@@ -26,7 +28,7 @@ private[chisel3] sealed trait ToBoolable extends Element {
     *
     * @note The width must be known and equal to 1
     */
-  final inline def asBool: Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_asBool}
+  final def asBool: Bool = macro SourceInfoWhiteboxTransform.noArg
 
   /** @group SourceInfoTransformMacro */
   def do_asBool(implicit sourceInfo: SourceInfo): Bool
@@ -61,7 +63,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @return This $coll with the `n` most significant bits removed.
     * @group Bitwise
     */
-  final inline def tail(n: Int): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_tail(n)}
+  final def tail(n: Int): UInt = macro SourceInfoTransform.nArg
 
   /** Head operator
     *
@@ -69,7 +71,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @return The `n` most significant bits of this $coll
     * @group Bitwise
     */
-  final inline def head(n: Int): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_head(n)}
+  final def head(n: Int): UInt = macro SourceInfoTransform.nArg
 
   /** @group SourceInfoTransformMacro */
   def do_tail(n: Int)(implicit sourceInfo: SourceInfo): UInt = {
@@ -96,7 +98,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @param x an index
     * @return the specified bit
     */
-  final inline def extract(x: BigInt): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_extract(x)}
+  final def extract(x: BigInt): Bool = macro SourceInfoTransform.xArg
 
   /** @group SourceInfoTransformMacro */
   final def do_extract(x: BigInt)(implicit sourceInfo: SourceInfo): Bool = {
@@ -147,7 +149,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @param x a hardware component whose value will be used for dynamic addressing
     * @return the specified bit
     */
-  final inline def extract(x: UInt): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_extract(x)}
+  final def extract(x: UInt): Bool = macro SourceInfoTransform.xArg
 
   /** @group SourceInfoTransformMacro */
   final def do_extract(x: UInt)(implicit sourceInfo: SourceInfo): Bool = {
@@ -174,7 +176,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @param x a hardware component whose value will be used for dynamic addressing
     * @return the specified bit
     */
-  final inline def apply(x: UInt): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(x)}
+  final def apply(x: UInt): Bool = macro SourceInfoTransform.xArg
 
   /** @group SourceInfoTransformMacro */
   final def do_apply(x: UInt)(implicit sourceInfo: SourceInfo): Bool =
@@ -191,7 +193,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @param y the low bit
     * @return a hardware component contain the requested bits
     */
-  final inline def apply(x: Int, y: Int): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(x, y)}
+  final def apply(x: Int, y: Int): UInt = macro SourceInfoTransform.xyArg
 
   /** @group SourceInfoTransformMacro */
   final def do_apply(x: Int, y: Int)(implicit sourceInfo: SourceInfo): UInt = {
@@ -229,7 +231,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @param y the low bit
     * @return a hardware component contain the requested bits
     */
-  final inline def apply(x: BigInt, y: BigInt): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(x, y)}
+  final def apply(x: BigInt, y: BigInt): UInt = macro SourceInfoTransform.xyArg
 
   /** @group SourceInfoTransformMacro */
   final def do_apply(x: BigInt, y: BigInt)(implicit sourceInfo: SourceInfo): UInt =
@@ -266,7 +268,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @note For [[SInt]]s only, this will do sign extension.
     * @group Bitwise
     */
-  final inline def pad(that: Int): this.type = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_pad(that)}
+  final def pad(that: Int): this.type = macro SourceInfoTransform.thatArg
 
   /** @group SourceInfoTransformMacro */
   def do_pad(that: Int)(implicit sourceInfo: SourceInfo): this.type = this.width match {
@@ -279,7 +281,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @return this $coll with each bit inverted
     * @group Bitwise
     */
-  final inline def unary_~ : Bits = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_unary_~ }
+  final def unary_~ : Bits = macro SourceInfoWhiteboxTransform.noArg
 
   /** @group SourceInfoTransformMacro */
   def do_unary_~(implicit sourceInfo: SourceInfo): Bits
@@ -293,7 +295,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     */
   // REVIEW TODO: redundant
   // REVIEW TODO: should these return this.type or Bits?
-  final inline def <<(that: BigInt): Bits = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_<<(that)}
+  final def <<(that: BigInt): Bits = macro SourceInfoWhiteboxTransform.thatArg
 
   /** @group SourceInfoTransformMacro */
   def do_<<(that: BigInt)(implicit sourceInfo: SourceInfo): Bits
@@ -305,7 +307,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * $sumWidthInt
     * @group Bitwise
     */
-  final inline def <<(that: Int): Bits = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_<<(that)}
+  final def <<(that: Int): Bits = macro SourceInfoWhiteboxTransform.thatArg
 
   /** @group SourceInfoTransformMacro */
   def do_<<(that: Int)(implicit sourceInfo: SourceInfo): Bits
@@ -317,7 +319,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @note The width of the returned $coll is `width of this + pow(2, width of that) - 1`.
     * @group Bitwise
     */
-  final inline def <<(that: UInt): Bits = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_<<(that)}
+  final def <<(that: UInt): Bits = macro SourceInfoWhiteboxTransform.thatArg
 
   /** @group SourceInfoTransformMacro */
   def do_<<(that: UInt)(implicit sourceInfo: SourceInfo): Bits
@@ -330,7 +332,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @group Bitwise
     */
   // REVIEW TODO: redundant
-  final inline def >>(that: BigInt): Bits = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_>>(that)}
+  final def >>(that: BigInt): Bits = macro SourceInfoWhiteboxTransform.thatArg
 
   /** @group SourceInfoTransformMacro */
   def do_>>(that: BigInt)(implicit sourceInfo: SourceInfo): Bits
@@ -342,7 +344,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * $unchangedWidth
     * @group Bitwise
     */
-  final inline def >>(that: Int): Bits = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_>>(that)}
+  final def >>(that: Int): Bits = macro SourceInfoWhiteboxTransform.thatArg
 
   /** @group SourceInfoTransformMacro */
   def do_>>(that: Int)(implicit sourceInfo: SourceInfo): Bits
@@ -355,13 +357,13 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * $unchangedWidth
     * @group Bitwise
     */
-  final inline def >>(that: UInt): Bits = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_>>(that)}
+  final def >>(that: UInt): Bits = macro SourceInfoWhiteboxTransform.thatArg
 
   /** @group SourceInfoTransformMacro */
   def do_>>(that: UInt)(implicit sourceInfo: SourceInfo): Bits
 
   /** Returns the contents of this wire as a [[scala.collection.Seq]] of [[Bool]]. */
-  final inline def asBools: Seq[Bool] = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_asBools}
+  final def asBools: Seq[Bool] = macro SourceInfoTransform.noArg
 
   /** @group SourceInfoTransformMacro */
   def do_asBools(implicit sourceInfo: SourceInfo): Seq[Bool] =
@@ -372,7 +374,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @note The arithmetic value is not preserved if the most-significant bit is set. For example, a [[UInt]] of
     * width 3 and value 7 (0b111) would become an [[SInt]] of width 3 and value -1.
     */
-  final inline def asSInt: SInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_asSInt}
+  final def asSInt: SInt = macro SourceInfoTransform.noArg
 
   /** @group SourceInfoTransformMacro */
   def do_asSInt(implicit sourceInfo: SourceInfo): SInt
@@ -391,7 +393,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * $sumWidth
     * @group Bitwise
     */
-  final inline def ##(that: Bits): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_##(that)}
+  final def ##(that: Bits): UInt = macro SourceInfoTransform.thatArg
 
   /** @group SourceInfoTransformMacro */
   def do_##(that: Bits)(implicit sourceInfo: SourceInfo): UInt = {
@@ -435,7 +437,7 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * $constantWidth
     * @group Arithmetic
     */
-  final inline def unary_- : UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_unary_- }
+  final def unary_- : UInt = macro SourceInfoTransform.noArg
 
   /** Unary negation (constant width)
     *
@@ -443,7 +445,7 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * $constantWidth
     * @group Arithmetic
     */
-  final inline def unary_-% : UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_unary_-% }
+  final def unary_-% : UInt = macro SourceInfoTransform.noArg
 
   /** @group SourceInfoTransformMacro */
   def do_unary_-(implicit sourceInfo: SourceInfo): UInt = 0.U - this
@@ -468,7 +470,7 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * $singleCycleMul
     * @group Arithmetic
     */
-  final inline def *(that: SInt): SInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_*(that)}
+  final def *(that: SInt): SInt = macro SourceInfoTransform.thatArg
 
   /** @group SourceInfoTransformMacro */
   def do_*(that: SInt)(implicit sourceInfo: SourceInfo): SInt = that * this
@@ -480,7 +482,7 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * $maxWidthPlusOne
     * @group Arithmetic
     */
-  final inline def +&(that: UInt): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_+&(that)}
+  final def +&(that: UInt): UInt = macro SourceInfoTransform.thatArg
 
   /** Addition operator (constant width)
     *
@@ -489,7 +491,7 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * $maxWidth
     * @group Arithmetic
     */
-  final inline def +%(that: UInt): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_+%(that)}
+  final def +%(that: UInt): UInt = macro SourceInfoTransform.thatArg
 
   /** Subtraction operator (increasing width)
     *
@@ -498,7 +500,7 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * $maxWidthPlusOne
     * @group Arithmetic
     */
-  final inline def -&(that: UInt): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_-&(that)}
+  final def -&(that: UInt): UInt = macro SourceInfoTransform.thatArg
 
   /** Subtraction operator (constant width)
     *
@@ -507,7 +509,7 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * $maxWidth
     * @group Arithmetic
     */
-  final inline def -%(that: UInt): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_-%(that)}
+  final def -%(that: UInt): UInt = macro SourceInfoTransform.thatArg
 
   /** @group SourceInfoTransformMacro */
   def do_+&(that: UInt)(implicit sourceInfo: SourceInfo): UInt =
@@ -532,7 +534,7 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * $maxWidth
     * @group Bitwise
     */
-  final inline def &(that: UInt): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_&(that)}
+  final def &(that: UInt): UInt = macro SourceInfoTransform.thatArg
 
   /** Bitwise or operator
     *
@@ -541,7 +543,7 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * $maxWidth
     * @group Bitwise
     */
-  final inline def |(that: UInt): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_|(that)}
+  final def |(that: UInt): UInt = macro SourceInfoTransform.thatArg
 
   /** Bitwise exclusive or (xor) operator
     *
@@ -550,9 +552,9 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * $maxWidth
     * @group Bitwise
     */
-  final inline def ^(that: UInt): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_^(that)}
+  final def ^(that: UInt): UInt = macro SourceInfoTransform.thatArg
 
-  //  override inline def abs: UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_abs}Dummy
+  //  override def abs: UInt = macro SourceInfoTransform.noArgDummy
   def do_abs(implicit sourceInfo: SourceInfo): UInt = this
 
   /** @group SourceInfoTransformMacro */
@@ -577,21 +579,21 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * @return a hardware [[Bool]] resulting from every bit of this $coll or'd together
     * @group Bitwise
     */
-  final inline def orR: Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_orR}
+  final def orR: Bool = macro SourceInfoTransform.noArg
 
   /** And reduction operator
     *
     * @return a hardware [[Bool]] resulting from every bit of this $coll and'd together
     * @group Bitwise
     */
-  final inline def andR: Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_andR}
+  final def andR: Bool = macro SourceInfoTransform.noArg
 
   /** Exclusive or (xor) reduction operator
     *
     * @return a hardware [[Bool]] resulting from every bit of this $coll xor'd together
     * @group Bitwise
     */
-  final inline def xorR: Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_xorR}
+  final def xorR: Bool = macro SourceInfoTransform.noArg
 
   /** @group SourceInfoTransformMacro */
   def do_orR(implicit sourceInfo: SourceInfo): Bool = redop(sourceInfo, OrReduceOp)
@@ -617,7 +619,7 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * @return a hardware [[Bool]] asserted if this $coll is not equal to `that`
     * @group Comparison
     */
-  final inline def =/=(that: UInt): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_=/=(that)}
+  final def =/=(that: UInt): Bool = macro SourceInfoTransform.thatArg
 
   /** Dynamic equals operator
     *
@@ -625,7 +627,7 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * @return a hardware [[Bool]] asserted if this $coll is equal to `that`
     * @group Comparison
     */
-  final inline def ===(that: UInt): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_===(that)}
+  final def ===(that: UInt): Bool = macro SourceInfoTransform.thatArg
 
   /** @group SourceInfoTransformMacro */
   def do_=/=(that: UInt)(implicit sourceInfo: SourceInfo): Bool =
@@ -640,7 +642,7 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * @return a hardware [[Bool]] asserted if this $coll equals zero
     * @group Bitwise
     */
-  final inline def unary_! : Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_unary_! }
+  final def unary_! : Bool = macro SourceInfoTransform.noArg
 
   /** @group SourceInfoTransformMacro */
   def do_unary_!(implicit sourceInfo: SourceInfo): Bool = this === 0.U(1.W)
@@ -663,7 +665,7 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * @param that number of bits to rotate
     * @return UInt of same width rotated left n bits
     */
-  final inline def rotateLeft(that: Int): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_rotateLeft(that)}
+  final def rotateLeft(that: Int): UInt = macro SourceInfoWhiteboxTransform.thatArg
 
   def do_rotateLeft(n: Int)(implicit sourceInfo: SourceInfo): UInt = width match {
     case _ if (n == 0)             => this
@@ -678,7 +680,7 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * @param that number of bits to rotate
     * @return UInt of same width rotated right n bits
     */
-  final inline def rotateRight(that: Int): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_rotateRight(that)}
+  final def rotateRight(that: Int): UInt = macro SourceInfoWhiteboxTransform.thatArg
 
   def do_rotateRight(n: Int)(implicit sourceInfo: SourceInfo): UInt = width match {
     case _ if (n <= 0)             => do_rotateLeft(-n)
@@ -687,7 +689,7 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     case _                         => this(n - 1, 0) ## (this >> n)
   }
 
-  final inline def rotateRight(that: UInt): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_rotateRight(that)}
+  final def rotateRight(that: UInt): UInt = macro SourceInfoWhiteboxTransform.thatArg
 
   private def dynamicShift(
     n:           UInt,
@@ -702,7 +704,7 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
   def do_rotateRight(n: UInt)(implicit sourceInfo: SourceInfo): UInt =
     dynamicShift(n, _ rotateRight _)
 
-  final inline def rotateLeft(that: UInt): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_rotateLeft(that)}
+  final def rotateLeft(that: UInt): UInt = macro SourceInfoWhiteboxTransform.thatArg
 
   def do_rotateLeft(n: UInt)(implicit sourceInfo: SourceInfo): UInt =
     dynamicShift(n, _ rotateLeft _)
@@ -714,13 +716,10 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * @return a hrdware $coll with bit `off` set or cleared based on the value of `dat`
     * $unchangedWidth
     */
-  final inline def bitSet(inline off: UInt, inline dat: Bool): UInt = {
-    val sourceInfo = summonInline[SourceInfo]
-    this.do_bitSet(off, dat)(sourceInfo)
-  }
+  final def bitSet(off: UInt, dat: Bool): UInt = macro UIntTransform.bitset
 
   /** @group SourceInfoTransformMacro */
-  def do_bitSet(off: UInt, dat: Bool)(using sourceInfo: SourceInfo): UInt = {
+  def do_bitSet(off: UInt, dat: Bool)(implicit sourceInfo: SourceInfo): UInt = {
     val bit = 1.U(1.W) << off
     Mux(dat, this | bit, ~(~this | bit))
   }
@@ -732,7 +731,7 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * @return an [[SInt]] equal to this $coll with an additional zero in its most significant bit
     * @note The width of the returned [[SInt]] is `width of this` + `1`.
     */
-  final inline def zext: SInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_zext}
+  final def zext: SInt = macro SourceInfoTransform.noArg
 
   /** @group SourceInfoTransformMacro */
   def do_zext(implicit sourceInfo: SourceInfo): SInt =
@@ -779,7 +778,7 @@ sealed class SInt private[chisel3] (width: Width) extends Bits(width) with Num[S
     * $constantWidth
     * @group Arithmetic
     */
-  final inline def unary_- : SInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_unary_- }
+  final def unary_- : SInt = macro SourceInfoTransform.noArg
 
   /** Unary negation (constant width)
     *
@@ -787,7 +786,7 @@ sealed class SInt private[chisel3] (width: Width) extends Bits(width) with Num[S
     * $constantWidth
     * @group Arithmetic
     */
-  final inline def unary_-% : SInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_unary_-% }
+  final def unary_-% : SInt = macro SourceInfoTransform.noArg
 
   /** @group SourceInfoTransformMacro */
   def do_unary_-(implicit sourceInfo: SourceInfo): SInt = 0.S - this
@@ -817,7 +816,7 @@ sealed class SInt private[chisel3] (width: Width) extends Bits(width) with Num[S
     * $singleCycleMul
     * @group Arithmetic
     */
-  final inline def *(that: UInt): SInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_*(that)}
+  final def *(that: UInt): SInt = macro SourceInfoTransform.thatArg
 
   /** @group SourceInfoTransformMacro */
   def do_*(that: UInt)(implicit sourceInfo: SourceInfo): SInt = {
@@ -833,7 +832,7 @@ sealed class SInt private[chisel3] (width: Width) extends Bits(width) with Num[S
     * $maxWidthPlusOne
     * @group Arithmetic
     */
-  final inline def +&(that: SInt): SInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_+&(that)}
+  final def +&(that: SInt): SInt = macro SourceInfoTransform.thatArg
 
   /** Addition operator (constant width)
     *
@@ -842,7 +841,7 @@ sealed class SInt private[chisel3] (width: Width) extends Bits(width) with Num[S
     * $maxWidth
     * @group Arithmetic
     */
-  final inline def +%(that: SInt): SInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_+%(that)}
+  final def +%(that: SInt): SInt = macro SourceInfoTransform.thatArg
 
   /** Subtraction operator (increasing width)
     *
@@ -851,7 +850,7 @@ sealed class SInt private[chisel3] (width: Width) extends Bits(width) with Num[S
     * $maxWidthPlusOne
     * @group Arithmetic
     */
-  final inline def -&(that: SInt): SInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_-&(that)}
+  final def -&(that: SInt): SInt = macro SourceInfoTransform.thatArg
 
   /** Subtraction operator (constant width)
     *
@@ -860,7 +859,7 @@ sealed class SInt private[chisel3] (width: Width) extends Bits(width) with Num[S
     * $maxWidth
     * @group Arithmetic
     */
-  final inline def -%(that: SInt): SInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_-%(that)}
+  final def -%(that: SInt): SInt = macro SourceInfoTransform.thatArg
 
   /** @group SourceInfoTransformMacro */
   def do_+&(that: SInt)(implicit sourceInfo: SourceInfo): SInt =
@@ -885,7 +884,7 @@ sealed class SInt private[chisel3] (width: Width) extends Bits(width) with Num[S
     * $maxWidth
     * @group Bitwise
     */
-  final inline def &(that: SInt): SInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_&(that)}
+  final def &(that: SInt): SInt = macro SourceInfoTransform.thatArg
 
   /** Bitwise or operator
     *
@@ -894,7 +893,7 @@ sealed class SInt private[chisel3] (width: Width) extends Bits(width) with Num[S
     * $maxWidth
     * @group Bitwise
     */
-  final inline def |(that: SInt): SInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_|(that)}
+  final def |(that: SInt): SInt = macro SourceInfoTransform.thatArg
 
   /** Bitwise exclusive or (xor) operator
     *
@@ -903,7 +902,7 @@ sealed class SInt private[chisel3] (width: Width) extends Bits(width) with Num[S
     * $maxWidth
     * @group Bitwise
     */
-  final inline def ^(that: SInt): SInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_^(that)}
+  final def ^(that: SInt): SInt = macro SourceInfoTransform.thatArg
 
   /** @group SourceInfoTransformMacro */
   def do_&(that: SInt)(implicit sourceInfo: SourceInfo): SInt =
@@ -936,7 +935,7 @@ sealed class SInt private[chisel3] (width: Width) extends Bits(width) with Num[S
     * @return a hardware [[Bool]] asserted if this $coll is not equal to `that`
     * @group Comparison
     */
-  final inline def =/=(that: SInt): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_=/=(that)}
+  final def =/=(that: SInt): Bool = macro SourceInfoTransform.thatArg
 
   /** Dynamic equals operator
     *
@@ -944,7 +943,7 @@ sealed class SInt private[chisel3] (width: Width) extends Bits(width) with Num[S
     * @return a hardware [[Bool]] asserted if this $coll is equal to `that`
     * @group Comparison
     */
-  final inline def ===(that: SInt): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_===(that)}
+  final def ===(that: SInt): Bool = macro SourceInfoTransform.thatArg
 
   /** @group SourceInfoTransformMacro */
   def do_=/=(that: SInt)(implicit sourceInfo: SourceInfo): Bool =
@@ -954,7 +953,7 @@ sealed class SInt private[chisel3] (width: Width) extends Bits(width) with Num[S
   def do_===(that: SInt)(implicit sourceInfo: SourceInfo): Bool =
     compop(sourceInfo, EqualOp, that)
 
-//  final inline def abs(): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_abs}Dummy
+//  final def abs(): UInt = macro SourceInfoTransform.noArgDummy
 
   def do_abs(implicit sourceInfo: SourceInfo): SInt = {
     Mux(this < 0.S, -this, this)
@@ -990,7 +989,7 @@ sealed class SInt private[chisel3] (width: Width) extends Bits(width) with Num[S
 sealed trait Reset extends Element with ToBoolable {
 
   /** Casts this $coll to an [[AsyncReset]] */
-  final inline def asAsyncReset: AsyncReset = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_asAsyncReset}
+  final def asAsyncReset: AsyncReset = macro SourceInfoWhiteboxTransform.noArg
 
   /** @group SourceInfoTransformMacro */
   def do_asAsyncReset(implicit sourceInfo: SourceInfo): AsyncReset
@@ -1129,7 +1128,7 @@ sealed class Bool() extends UInt(1.W) with Reset {
     * @return the bitwise and of  this $coll and `that`
     * @group Bitwise
     */
-  final inline def &(that: Bool): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_&(that)}
+  final def &(that: Bool): Bool = macro SourceInfoTransform.thatArg
 
   /** Bitwise or operator
     *
@@ -1137,7 +1136,7 @@ sealed class Bool() extends UInt(1.W) with Reset {
     * @return the bitwise or of this $coll and `that`
     * @group Bitwise
     */
-  final inline def |(that: Bool): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_|(that)}
+  final def |(that: Bool): Bool = macro SourceInfoTransform.thatArg
 
   /** Bitwise exclusive or (xor) operator
     *
@@ -1145,7 +1144,7 @@ sealed class Bool() extends UInt(1.W) with Reset {
     * @return the bitwise xor of this $coll and `that`
     * @group Bitwise
     */
-  final inline def ^(that: Bool): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_^(that)}
+  final def ^(that: Bool): Bool = macro SourceInfoTransform.thatArg
 
   /** @group SourceInfoTransformMacro */
   def do_&(that: Bool)(implicit sourceInfo: SourceInfo): Bool =
@@ -1170,7 +1169,7 @@ sealed class Bool() extends UInt(1.W) with Reset {
     * @note this is equivalent to [[Bool!.|(that:chisel3\.Bool)* Bool.|)]]
     * @group Logical
     */
-  inline def ||(that: Bool): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_||(that)}
+  def ||(that: Bool): Bool = macro SourceInfoTransform.thatArg
 
   /** @group SourceInfoTransformMacro */
   def do_||(that: Bool)(implicit sourceInfo: SourceInfo): Bool = this | that
@@ -1182,13 +1181,13 @@ sealed class Bool() extends UInt(1.W) with Reset {
     * @note this is equivalent to [[Bool!.&(that:chisel3\.Bool)* Bool.&]]
     * @group Logical
     */
-  inline def &&(that: Bool): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_&&(that)}
+  def &&(that: Bool): Bool = macro SourceInfoTransform.thatArg
 
   /** @group SourceInfoTransformMacro */
   def do_&&(that: Bool)(implicit sourceInfo: SourceInfo): Bool = this & that
 
   /** Reinterprets this $coll as a clock */
-  inline def asClock: Clock = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_asClock}
+  def asClock: Clock = macro SourceInfoTransform.noArg
 
   /** @group SourceInfoTransformMacro */
   def do_asClock(implicit sourceInfo: SourceInfo): Clock = pushOp(
