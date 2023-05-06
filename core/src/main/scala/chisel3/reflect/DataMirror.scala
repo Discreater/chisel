@@ -219,7 +219,7 @@ object DataMirror {
   // Alignment-aware collections
   import connectable.{AlignedWithRoot, Alignment, FlippedWithRoot}
   // Implement typeclass to enable collecting over Alignment
-  implicit val AlignmentMatchingZipOfChildren = new HasMatchingZipOfChildren[Alignment] {
+  implicit val AlignmentMatchingZipOfChildren: HasMatchingZipOfChildren[Alignment] = new HasMatchingZipOfChildren[Alignment] {
     def matchingZipOfChildren(
       left:  Option[Alignment],
       right: Option[Alignment]

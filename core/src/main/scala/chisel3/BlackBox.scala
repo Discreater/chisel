@@ -133,7 +133,7 @@ abstract class BlackBox(
       .collect { case r: Record => r } // Must be a Record
 
   // Allow access to bindings from the compatibility package
-  protected def _compatIoPortBound() = _io.exists(portsContains(_))
+  protected def _compatIoPortBound(): Boolean = _io.exists(portsContains(_))
 
   private[chisel3] override def generateComponent(): Option[Component] = {
     // Restrict IO to just io, clock, and reset

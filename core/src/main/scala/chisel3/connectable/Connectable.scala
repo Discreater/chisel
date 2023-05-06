@@ -29,7 +29,7 @@ final class Connectable[+T <: Data] private (
     new Connectable(base, waived, squeezed, excluded)
 
   /** True if no members are waived or squeezed or excluded */
-  def notWaivedOrSqueezedOrExcluded = waived.isEmpty && squeezed.isEmpty && excluded.isEmpty
+  def notWaivedOrSqueezedOrExcluded: Boolean = waived.isEmpty && squeezed.isEmpty && excluded.isEmpty
 
   /** Static cast to a super type */
   def as[S <: Data](implicit ev: T <:< S): Connectable[S] = this.asInstanceOf[Connectable[S]]

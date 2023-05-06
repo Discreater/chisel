@@ -294,7 +294,7 @@ object Lookupable {
     def instanceLookup[A](that:   A => B, instance:   Instance[A]):   C = that(instance.proto)
   }
 
-  implicit def lookupInstance[B <: BaseModule](implicit sourceInfo: SourceInfo) =
+  implicit def lookupInstance[B <: BaseModule](implicit sourceInfo: SourceInfo): Lookupable[Instance[B]] =
     new Lookupable[Instance[B]] {
       type C = Instance[B]
       def definitionLookup[A](that: A => Instance[B], definition: Definition[A]): C = {
@@ -311,7 +311,7 @@ object Lookupable {
       }
     }
 
-  implicit def lookupModule[B <: BaseModule](implicit sourceInfo: SourceInfo) =
+  implicit def lookupModule[B <: BaseModule](implicit sourceInfo: SourceInfo): Lookupable[B] =
     new Lookupable[B] {
       type C = Instance[B]
       def definitionLookup[A](that: A => B, definition: Definition[A]): C = {
@@ -328,7 +328,7 @@ object Lookupable {
       }
     }
 
-  implicit def lookupData[B <: Data](implicit sourceInfo: SourceInfo) =
+  implicit def lookupData[B <: Data](implicit sourceInfo: SourceInfo): Lookupable[B] =
     new Lookupable[B] {
       type C = B
       def definitionLookup[A](that: A => B, definition: Definition[A]): C = {
@@ -394,7 +394,7 @@ object Lookupable {
     }
   }
 
-  implicit def lookupMem[B <: MemBase[_]](implicit sourceInfo: SourceInfo) =
+  implicit def lookupMem[B <: MemBase[_]](implicit sourceInfo: SourceInfo): Lookupable[B] =
     new Lookupable[B] {
       type C = B
       def definitionLookup[A](that: A => B, definition: Definition[A]): C = {
@@ -409,7 +409,7 @@ object Lookupable {
   implicit def lookupIterable[B, F[_] <: Iterable[_]](
     implicit sourceInfo: SourceInfo,
     lookupable:          Lookupable[B]
-  ) = new Lookupable[F[B]] {
+  ): Lookupable[F[B]] = new Lookupable[F[B]] {
     type C = F[lookupable.C]
     def definitionLookup[A](that: A => F[B], definition: Definition[A]): C = {
       val ret = that(definition.proto).asInstanceOf[Iterable[B]]
@@ -424,7 +424,7 @@ object Lookupable {
   implicit def lookupOption[B](
     implicit sourceInfo: SourceInfo,
     lookupable:          Lookupable[B]
-  ) = new Lookupable[Option[B]] {
+  ): Lookupable[Option[B]] = new Lookupable[Option[B]] {
     type C = Option[lookupable.C]
     def definitionLookup[A](that: A => Option[B], definition: Definition[A]): C = {
       val ret = that(definition.proto)
@@ -440,7 +440,7 @@ object Lookupable {
     implicit sourceInfo: SourceInfo,
     lookupableL:         Lookupable[L],
     lookupableR:         Lookupable[R]
-  ) = new Lookupable[Either[L, R]] {
+  ): Lookupable[Either[L,R]] = new Lookupable[Either[L, R]] {
     type C = Either[lookupableL.C, lookupableR.C]
     def definitionLookup[A](that: A => Either[L, R], definition: Definition[A]): C = {
       val ret = that(definition.proto)
@@ -461,7 +461,7 @@ object Lookupable {
     implicit sourceInfo: SourceInfo,
     lookupableX:         Lookupable[X],
     lookupableY:         Lookupable[Y]
-  ) = new Lookupable[(X, Y)] {
+  ): Lookupable[(X, Y)] = new Lookupable[(X, Y)] {
     type C = (lookupableX.C, lookupableY.C)
     def definitionLookup[A](that: A => (X, Y), definition: Definition[A]): C = {
       val ret = that(definition.proto)
@@ -479,7 +479,7 @@ object Lookupable {
 
   implicit def lookupIsInstantiable[B <: IsInstantiable](
     implicit sourceInfo: SourceInfo
-  ) = new Lookupable[B] {
+  ): Lookupable[B] = new Lookupable[B] {
     type C = Instance[B]
     def definitionLookup[A](that: A => B, definition: Definition[A]): C = {
       val ret = that(definition.proto)
@@ -499,16 +499,16 @@ object Lookupable {
     }
   }
 
-  implicit def lookupIsLookupable[B <: IsLookupable](implicit sourceInfo: SourceInfo) =
+  implicit def lookupIsLookupable[B <: IsLookupable](implicit sourceInfo: SourceInfo): SimpleLookupable[B] =
     new SimpleLookupable[B]()
 
-  implicit val lookupInt = new SimpleLookupable[Int]()
-  implicit val lookupByte = new SimpleLookupable[Byte]()
-  implicit val lookupShort = new SimpleLookupable[Short]()
-  implicit val lookupLong = new SimpleLookupable[Long]()
-  implicit val lookupFloat = new SimpleLookupable[Float]()
-  implicit val lookupChar = new SimpleLookupable[Char]()
-  implicit val lookupString = new SimpleLookupable[String]()
-  implicit val lookupBoolean = new SimpleLookupable[Boolean]()
-  implicit val lookupBigInt = new SimpleLookupable[BigInt]()
+  implicit val lookupInt: SimpleLookupable[Int] = new SimpleLookupable[Int]()
+  implicit val lookupByte: SimpleLookupable[Byte] = new SimpleLookupable[Byte]()
+  implicit val lookupShort: SimpleLookupable[Short] = new SimpleLookupable[Short]()
+  implicit val lookupLong: SimpleLookupable[Long] = new SimpleLookupable[Long]()
+  implicit val lookupFloat: SimpleLookupable[Float] = new SimpleLookupable[Float]()
+  implicit val lookupChar: SimpleLookupable[Char] = new SimpleLookupable[Char]()
+  implicit val lookupString: SimpleLookupable[String] = new SimpleLookupable[String]()
+  implicit val lookupBoolean: SimpleLookupable[Boolean] = new SimpleLookupable[Boolean]()
+  implicit val lookupBigInt: SimpleLookupable[BigInt] = new SimpleLookupable[BigInt]()
 }

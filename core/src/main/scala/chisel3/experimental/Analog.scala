@@ -30,7 +30,7 @@ final class Analog private (private[chisel3] val width: Width) extends Element {
 
   /** A stable typeName for this `Analog`
     */
-  override def typeName = s"Analog$width"
+  override def typeName: String = s"Analog$width"
 
   override def litOption: Option[BigInt] = None
 

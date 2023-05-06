@@ -202,9 +202,9 @@ package internal {
       * FIRRTL yet its elements *do*) so have some very specialized behavior.
       */
     private[chisel3] class ClonePorts(elts: (String, Data)*) extends Record {
-      val elements = ListMap(elts.map { case (name, d) => name -> d.cloneTypeFull }: _*)
-      def apply(field: String) = elements(field)
-      override def cloneType = (new ClonePorts(elts: _*)).asInstanceOf[this.type]
+      val elements: ListMap[String,Data] = ListMap(elts.map { case (name, d) => name -> d.cloneTypeFull }: _*)
+      def apply(field: String): Data = elements(field)
+      override def cloneType: this.type = (new ClonePorts(elts: _*)).asInstanceOf[this.type]
     }
 
     private[chisel3] def cloneIORecord(
@@ -270,7 +270,7 @@ package experimental {
     // Used with chisel3.naming.fixTraitIdentifier
     protected def _traitModuleDefinitionIdentifierProposal: Option[String] = None
 
-    protected def _moduleDefinitionIdentifierProposal = {
+    protected def _moduleDefinitionIdentifierProposal: String = {
       val baseName = _traitModuleDefinitionIdentifierProposal.getOrElse(this.getClass.getName)
 
       /* A sequence of string filters applied to the name */
@@ -446,7 +446,7 @@ package experimental {
     }
 
     /** Legalized name of this module. */
-    final lazy val name =
+    final lazy val name: String =
       try {
         // PseudoModules are not "true modules" and thus should share
         // their original modules names without uniquification
