@@ -37,7 +37,7 @@ import scala.annotation.tailrec
   */
 
 private[chisel3] object MonoConnect {
-  def formatName(data: Data) = s"""${data.earlyName} in ${data.parentNameOpt.getOrElse("(unknown)")}"""
+  def formatName(data: Data): String = s"""${data.earlyName} in ${data.parentNameOpt.getOrElse("(unknown)")}"""
 
   // These are all the possible exceptions that can be thrown.
   // These are from element-level connection

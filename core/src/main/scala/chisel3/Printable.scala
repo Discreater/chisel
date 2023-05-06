@@ -171,7 +171,7 @@ sealed abstract class FirrtlFormat(private[chisel3] val specifier: Char) extends
   }
 }
 object FirrtlFormat {
-  final val legalSpecifiers = List('d', 'x', 'b', 'c')
+  final val legalSpecifiers: List[Char] = List('d', 'x', 'b', 'c')
 
   def unapply(x: Char): Option[Char] =
     Option(x).filter(x => legalSpecifiers contains x)

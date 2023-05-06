@@ -18,7 +18,7 @@ import chisel3.internal.firrtl.{Component, Ref}
 private[chisel3] final class InstanceClone[T <: BaseModule](val getProto: T, val instName: () => String)
     extends PseudoModule
     with core.IsClone[T] {
-  override def toString = s"InstanceClone(${getProto})"
+  override def toString: String = s"InstanceClone(${getProto})"
   override private[chisel3] def _definitionIdentifier = getProto.definitionIdentifier
   // No addition components are generated
   private[chisel3] def generateComponent(): Option[Component] = None
@@ -27,7 +27,7 @@ private[chisel3] final class InstanceClone[T <: BaseModule](val getProto: T, val
   // This module doesn't acutally exist in the FIRRTL so no initialization to do
   private[chisel3] def initializeInParent(): Unit = ()
   // Instance name is the same as proto's instance name
-  override def instanceName = instName()
+  override def instanceName: String = instName()
   // Module name is the same as proto's module name
   override def desiredName: String = getProto.name
 }

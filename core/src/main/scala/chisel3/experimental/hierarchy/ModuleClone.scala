@@ -12,7 +12,7 @@ import chisel3._
 private[chisel3] class ModuleClone[T <: BaseModule](val getProto: T)(implicit si: SourceInfo)
     extends PseudoModule
     with core.IsClone[T] {
-  override def toString = s"ModuleClone(${getProto})"
+  override def toString: String = s"ModuleClone(${getProto})"
   // Do not call default addId function, which may modify a module that is already "closed"
   override def addId(d: HasId): Unit = ()
   def getPorts = _portsRecord

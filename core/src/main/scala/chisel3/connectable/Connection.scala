@@ -56,7 +56,7 @@ private[chisel3] case object ColonLessGreaterEq extends Connection {
   val connectToConsumer:       Boolean = true
   val connectToProducer:       Boolean = true
   val alwaysConnectToConsumer: Boolean = false
-  def canFirrtlConnect(consumer: Connectable[Data], producer: Connectable[Data]) = {
+  def canFirrtlConnect(consumer: Connectable[Data], producer: Connectable[Data]): Boolean = {
     val typeEquivalent =
       try {
         BiConnect.canFirrtlConnectData(

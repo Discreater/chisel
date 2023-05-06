@@ -88,7 +88,7 @@ private[chisel3] sealed trait Alignment {
       case other                       => "unmatched"
     }
 
-  final def empty = EmptyAlignment(base, isConsumer)
+  final def empty: EmptyAlignment = EmptyAlignment(base, isConsumer)
 }
 
 // The alignment datastructure for a missing field
@@ -97,9 +97,9 @@ private[chisel3] case class EmptyAlignment(base: Connectable[Data], isConsumer: 
   def waived = Set.empty
   def squeezed = Set.empty
   def excluded = Set.empty
-  def invert = this
+  def invert: EmptyAlignment = this
   def coerced = false
-  def coerce = this
+  def coerce: EmptyAlignment = this
   def swap(d: Data): Alignment = this
   def alignment: String = "none"
 }
@@ -112,8 +112,8 @@ private[chisel3] case class AlignedWithRoot(
   coerced:    Boolean,
   isConsumer: Boolean)
     extends NonEmptyAlignment {
-  def invert = if (coerced) this else FlippedWithRoot(base, member, coerced, isConsumer)
-  def coerce = this.copy(base, member, true)
+  def invert: Alignment = if (coerced) this else FlippedWithRoot(base, member, coerced, isConsumer)
+  def coerce: AlignedWithRoot = this.copy(base, member, true)
   def swap(d: Data): Alignment = this.copy(member = d)
   def alignment: String = "aligned"
 }
@@ -124,8 +124,8 @@ private[chisel3] case class FlippedWithRoot(
   coerced:    Boolean,
   isConsumer: Boolean)
     extends NonEmptyAlignment {
-  def invert = if (coerced) this else AlignedWithRoot(base, member, coerced, isConsumer)
-  def coerce = this.copy(base, member, true)
+  def invert: Alignment = if (coerced) this else AlignedWithRoot(base, member, coerced, isConsumer)
+  def coerce: FlippedWithRoot = this.copy(base, member, true)
   def swap(d: Data): Alignment = this.copy(member = d)
   def alignment: String = "flipped"
 }

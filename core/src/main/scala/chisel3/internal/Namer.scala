@@ -68,8 +68,8 @@ object DummyNamer extends NamingContextInterface {
   */
 class NamingContext extends NamingContextInterface {
   val descendants = new IdentityHashMap[AnyRef, ListBuffer[NamingContext]]()
-  val anonymousDescendants = ListBuffer[NamingContext]()
-  val items = ListBuffer[(AnyRef, String)]()
+  val anonymousDescendants: ListBuffer[NamingContext] = ListBuffer[NamingContext]()
+  val items: ListBuffer[(AnyRef, String)] = ListBuffer[(AnyRef, String)]()
   var closed = false // a sanity check to ensure no more name() calls are done after namePrefix
 
   /** Adds a NamingContext object as a descendant - where its contained objects will have names
@@ -131,7 +131,7 @@ class NamingContext extends NamingContextInterface {
   * contexts as functions are called / finished.
   */
 class NamingStack {
-  val namingStack = Stack[NamingContext]()
+  val namingStack: Stack[NamingContext] = Stack[NamingContext]()
 
   /** Creates a new naming context, where all items in the context will have their names prefixed
     * with some yet-to-be-determined prefix from object names in an enclosing scope.

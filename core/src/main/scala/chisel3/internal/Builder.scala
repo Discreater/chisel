@@ -21,6 +21,7 @@ import logger.LazyLogging
 import scala.collection.mutable
 import scala.annotation.tailrec
 import java.io.File
+import chisel3.experimental.hierarchy.core.IsInstantiable
 
 private[chisel3] class Namespace(keywords: Set[String], separator: Char = '_') {
   // This HashMap is compressed, not every name in the namespace is present here.
@@ -418,13 +419,13 @@ private[chisel3] class DynamicContext(
   val throwOnFirstError: Boolean,
   val warningsAsErrors:  Boolean,
   val sourceRoots:       Seq[File]) {
-  val importedDefinitionAnnos = annotationSeq.collect { case a: ImportDefinitionAnnotation[_] => a }
+  val importedDefinitionAnnos: Seq[ImportDefinitionAnnotation[_ <: BaseModule with IsInstantiable]] = annotationSeq.collect { case a: ImportDefinitionAnnotation[_] => a }
 
   // Map from proto module name to ext-module name
   // Pick the definition name by default in case not overridden
   // 1. Ensure there are no repeated names for imported Definitions - both Proto Names as well as ExtMod Names
   // 2. Return the distinct definition / extMod names
-  val importedDefinitionMap = importedDefinitionAnnos
+  val importedDefinitionMap: Map[String,String] = importedDefinitionAnnos
     .map(a => a.definition.proto.name -> a.overrideDefName.getOrElse(a.definition.proto.name))
     .toMap
 
@@ -449,7 +450,7 @@ private[chisel3] class DynamicContext(
   }
 
   val globalNamespace = Namespace.empty
-  val globalIdentifierNamespace = Namespace.empty('$')
+  val globalIdentifierNamespace: Namespace = Namespace.empty('$')
 
   // Ensure imported Definitions emit as ExtModules with the correct name so
   // that instantiations will also use the correct name and prevent any name
@@ -460,9 +461,9 @@ private[chisel3] class DynamicContext(
       identifiers.foreach(globalIdentifierNamespace.name(_))
   }
 
-  val components = ArrayBuffer[Component]()
-  val annotations = ArrayBuffer[ChiselAnnotation]()
-  val newAnnotations = ArrayBuffer[ChiselMultiAnnotation]()
+  val components: ArrayBuffer[Component] = ArrayBuffer[Component]()
+  val annotations: ArrayBuffer[ChiselAnnotation] = ArrayBuffer[ChiselAnnotation]()
+  val newAnnotations: ArrayBuffer[ChiselMultiAnnotation] = ArrayBuffer[ChiselMultiAnnotation]()
   var currentModule: Option[BaseModule] = None
 
   /** Contains a mapping from a elaborated module to their aspect
@@ -506,7 +507,7 @@ private[chisel3] object Builder extends LazyLogging {
   // Returns the current dynamic context
   def captureContext(): DynamicContext = dynamicContext
   // Sets the current dynamic contents
-  def restoreContext(dc: DynamicContext) = dynamicContextVar.value = Some(dc)
+  def restoreContext(dc: DynamicContext): Unit = dynamicContextVar.value = Some(dc)
 
   // Ensure we have a thread-specific ChiselContext
   private val chiselContext = new ThreadLocal[ChiselContext] {

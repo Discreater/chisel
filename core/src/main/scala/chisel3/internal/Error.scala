@@ -95,9 +95,9 @@ private[chisel3] object throwException {
 
 /** Records and reports runtime errors and warnings. */
 private[chisel3] object ErrorLog {
-  val depTag = s"[${Console.BLUE}deprecated${Console.RESET}]"
-  val warnTag = s"[${Console.YELLOW}warn${Console.RESET}]"
-  val errTag = s"[${Console.RED}error${Console.RESET}]"
+  val depTag: String = s"[${Console.BLUE}deprecated${Console.RESET}]"
+  val warnTag: String = s"[${Console.YELLOW}warn${Console.RESET}]"
+  val errTag: String = s"[${Console.RED}error${Console.RESET}]"
 }
 
 private[chisel3] class ErrorLog(warningsAsErrors: Boolean, sourceRoots: Seq[File]) {
@@ -263,7 +263,7 @@ private[chisel3] class ErrorLog(warningsAsErrors: Boolean, sourceRoots: Seq[File
 }
 
 private case class ErrorEntry(lines: Seq[String], isFatal: Boolean) {
-  def tag = if (isFatal) ErrorLog.errTag else ErrorLog.warnTag
+  def tag: String = if (isFatal) ErrorLog.errTag else ErrorLog.warnTag
 
   def serialize: String = lines.map(s"$tag " + _).mkString("\n")
 }
