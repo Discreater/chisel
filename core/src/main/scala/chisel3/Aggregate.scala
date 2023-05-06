@@ -871,7 +871,7 @@ trait VecLike[T <: Data] extends IndexedSeq[T] with HasId with SourceInfoDoc {
 
   /** Outputs true if p outputs true for every element.
     */
-  def forall(p: T => Bool): Bool = macro SourceInfoTransform.pArg
+  inline def forall(p: T => Bool): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_forall(p)}
 
   /** @group SourceInfoTransformMacro */
   def do_forall(p: T => Bool)(implicit sourceInfo: SourceInfo): Bool =
@@ -879,7 +879,7 @@ trait VecLike[T <: Data] extends IndexedSeq[T] with HasId with SourceInfoDoc {
 
   /** Outputs true if p outputs true for at least one element.
     */
-  def exists(p: T => Bool): Bool = macro SourceInfoTransform.pArg
+  inline def exists(p: T => Bool): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_exists(p)}
 
   /** @group SourceInfoTransformMacro */
   def do_exists(p: T => Bool)(implicit sourceInfo: SourceInfo): Bool =
@@ -899,7 +899,7 @@ trait VecLike[T <: Data] extends IndexedSeq[T] with HasId with SourceInfoDoc {
 
   /** Outputs the number of elements for which p is true.
     */
-  def count(p: T => Bool): UInt = macro SourceInfoTransform.pArg
+  inline def count(p: T => Bool): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_count(p)}
 
   /** @group SourceInfoTransformMacro */
   def do_count(p: T => Bool)(implicit sourceInfo: SourceInfo): UInt =
@@ -912,7 +912,7 @@ trait VecLike[T <: Data] extends IndexedSeq[T] with HasId with SourceInfoDoc {
 
   /** Outputs the index of the first element for which p outputs true.
     */
-  def indexWhere(p: T => Bool): UInt = macro SourceInfoTransform.pArg
+  inline def indexWhere(p: T => Bool): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_indexWhere(p)}
 
   /** @group SourceInfoTransformMacro */
   def do_indexWhere(p: T => Bool)(implicit sourceInfo: SourceInfo): UInt =
@@ -920,7 +920,7 @@ trait VecLike[T <: Data] extends IndexedSeq[T] with HasId with SourceInfoDoc {
 
   /** Outputs the index of the last element for which p outputs true.
     */
-  def lastIndexWhere(p: T => Bool): UInt = macro SourceInfoTransform.pArg
+  inline def lastIndexWhere(p: T => Bool): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_lastIndexWhere(p)}
 
   /** @group SourceInfoTransformMacro */
   def do_lastIndexWhere(p: T => Bool)(implicit sourceInfo: SourceInfo): UInt =
@@ -936,7 +936,7 @@ trait VecLike[T <: Data] extends IndexedSeq[T] with HasId with SourceInfoDoc {
     * true is NOT checked (useful in cases where the condition doesn't always
     * hold, but the results are not used in those cases)
     */
-  def onlyIndexWhere(p: T => Bool): UInt = macro SourceInfoTransform.pArg
+  inline def onlyIndexWhere(p: T => Bool): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_onlyIndexWhere(p)}
 
   /** @group SourceInfoTransformMacro */
   def do_onlyIndexWhere(p: T => Bool)(implicit sourceInfo: SourceInfo): UInt =

@@ -41,7 +41,7 @@ trait Num[T <: Data] {
     * $maxWidth
     * @group Arithmetic
     */
-  final def +(that: T): T = macro SourceInfoTransform.thatArg
+  final inline def +(that: T): T = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_+(that)}
 
   /** @group SourceInfoTransformMacro */
   def do_+(that: T)(implicit sourceInfo: SourceInfo): T
@@ -54,7 +54,7 @@ trait Num[T <: Data] {
     * $singleCycleMul
     * @group Arithmetic
     */
-  final def *(that: T): T = macro SourceInfoTransform.thatArg
+  final inline def *(that: T): T = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_*(that)}
 
   /** @group SourceInfoTransformMacro */
   def do_*(that: T)(implicit sourceInfo: SourceInfo): T
@@ -67,7 +67,7 @@ trait Num[T <: Data] {
     * @todo full rules
     * @group Arithmetic
     */
-  final def /(that: T): T = macro SourceInfoTransform.thatArg
+  final inline def /(that: T): T = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_/(that)}
 
   /** @group SourceInfoTransformMacro */
   def do_/(that: T)(implicit sourceInfo: SourceInfo): T
@@ -79,7 +79,7 @@ trait Num[T <: Data] {
     * $singleCycleDiv
     * @group Arithmetic
     */
-  final def %(that: T): T = macro SourceInfoTransform.thatArg
+  final inline def %(that: T): T = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_%(that)}
 
   /** @group SourceInfoTransformMacro */
   def do_%(that: T)(implicit sourceInfo: SourceInfo): T
@@ -91,7 +91,7 @@ trait Num[T <: Data] {
     * $maxWidthPlusOne
     * @group Arithmetic
     */
-  final def -(that: T): T = macro SourceInfoTransform.thatArg
+  final inline def -(that: T): T = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_-(that)}
 
   /** @group SourceInfoTransformMacro */
   def do_-(that: T)(implicit sourceInfo: SourceInfo): T
@@ -102,7 +102,7 @@ trait Num[T <: Data] {
     * @return a hardware [[Bool]] asserted if this $coll is less than `that`
     * @group Comparison
     */
-  final def <(that: T): Bool = macro SourceInfoTransform.thatArg
+  final inline def <(that: T): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_<(that)}
 
   /** @group SourceInfoTransformMacro */
   def do_<(that: T)(implicit sourceInfo: SourceInfo): Bool
@@ -113,7 +113,7 @@ trait Num[T <: Data] {
     * @return a hardware [[Bool]] asserted if this $coll is less than or equal to `that`
     * @group Comparison
     */
-  final def <=(that: T): Bool = macro SourceInfoTransform.thatArg
+  final inline def <=(that: T): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_<=(that)}
 
   /** @group SourceInfoTransformMacro */
   def do_<=(that: T)(implicit sourceInfo: SourceInfo): Bool
@@ -124,7 +124,7 @@ trait Num[T <: Data] {
     * @return a hardware [[Bool]] asserted if this $coll is greater than `that`
     * @group Comparison
     */
-  final def >(that: T): Bool = macro SourceInfoTransform.thatArg
+  final inline def >(that: T): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_>(that)}
 
   /** @group SourceInfoTransformMacro */
   def do_>(that: T)(implicit sourceInfo: SourceInfo): Bool
@@ -135,7 +135,7 @@ trait Num[T <: Data] {
     * @return a hardware [[Bool]] asserted if this $coll is greather than or equal to `that`
     * @group Comparison
     */
-  final def >=(that: T): Bool = macro SourceInfoTransform.thatArg
+  final inline def >=(that: T): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_>=(that)}
 
   /** @group SourceInfoTransformMacro */
   def do_>=(that: T)(implicit sourceInfo: SourceInfo): Bool
@@ -146,7 +146,7 @@ trait Num[T <: Data] {
     * $unchangedWidth
     * @group Arithmetic
     */
-  final def abs: T = macro SourceInfoTransform.noArg
+  final inline def abs: T = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_abs}
 
   /** @group SourceInfoTransformMacro */
   def do_abs(implicit sourceInfo: SourceInfo): T
@@ -158,7 +158,7 @@ trait Num[T <: Data] {
     * $maxWidth
     * @group Arithmetic
     */
-  final def min(that: T): T = macro SourceInfoTransform.thatArg
+  final inline def min(that: T): T = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_min(that)}
 
   /** @group SourceInfoTransformMacro */
   def do_min(that: T)(implicit sourceInfo: SourceInfo): T =
@@ -171,7 +171,7 @@ trait Num[T <: Data] {
     * $maxWidth
     * @group Arithmetic
     */
-  final def max(that: T): T = macro SourceInfoTransform.thatArg
+  final inline def max(that: T): T = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_max(that)}
 
   /** @group SourceInfoTransformMacro */
   def do_max(that: T)(implicit sourceInfo: SourceInfo): T =

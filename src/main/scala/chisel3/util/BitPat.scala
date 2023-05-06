@@ -321,8 +321,8 @@ sealed class BitPat(val value: BigInt, val mask: BigInt, val width: Int)
     * Get specified width of said BitPat
     */
   override def getWidth: Int = width
-  def apply(x:  Int): BitPat = macro SourceInfoTransform.xArg
-  def apply(x:  Int, y: Int): BitPat = macro SourceInfoTransform.xyArg
+  inline def apply(x:  Int): BitPat = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(x)}
+  inline def apply(x:  Int, y: Int): BitPat = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(x, y)}
   def ===(that: UInt):   Bool = macro SourceInfoTransform.thatArg
   def =/=(that: UInt):   Bool = macro SourceInfoTransform.thatArg
   def ##(that:  BitPat): BitPat = macro SourceInfoTransform.thatArg

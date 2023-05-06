@@ -16,7 +16,10 @@ object RegEnable {
     * val regWithEnable = RegEnable(nextVal, ena)
     * }}}
     */
-  def apply[T <: Data](next: T, enable: Bool): T = macro SourceInfoTransform.nextEnableArg
+  inline def apply[T <: Data](next: T, enable: Bool): T = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_apply(next, enable)
+  }
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](next: T, enable: Bool)(implicit sourceInfo: SourceInfo): T = {
@@ -31,7 +34,10 @@ object RegEnable {
     * val regWithEnableAndReset = RegEnable(nextVal, 0.U, ena)
     * }}}
     */
-  def apply[T <: Data](next: T, init: T, enable: Bool): T = macro SourceInfoTransform.nextInitEnableArg
+  inline def apply[T <: Data](next: T, init: T, enable: Bool): T = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]; 
+    do_apply(next, init, enable)
+  }
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](
@@ -59,7 +65,7 @@ object ShiftRegister {
     * val regDelayTwo = ShiftRegister(nextVal, 2, ena)
     * }}}
     */
-  def apply[T <: Data](in: T, n: Int, en: Bool): T = macro SourceInfoTransform.inNEnArg
+  inline def apply[T <: Data](in: T, n: Int, en: Bool): T = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(in, n, en)}
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](
@@ -82,7 +88,7 @@ object ShiftRegister {
     * val regDelayTwo = ShiftRegister(nextVal, 2)
     * }}}
     */
-  def apply[T <: Data](in: T, n: Int): T = macro SourceInfoTransform.inNArg
+  inline def apply[T <: Data](in: T, n: Int): T = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(in, n)}
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](in: T, n: Int)(implicit sourceInfo: SourceInfo): T =
@@ -108,7 +114,7 @@ object ShiftRegister {
     * val regDelayTwoReset = ShiftRegister(nextVal, 2, 0.U, ena)
     * }}}
     */
-  def apply[T <: Data](in: T, n: Int, resetData: T, en: Bool): T = macro SourceInfoTransform.inNResetDataEnArg
+  inline def apply[T <: Data](in: T, n: Int, resetData: T, en: Bool): T = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(in, n, resetData, en)}
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](
@@ -130,7 +136,7 @@ object ShiftRegisters {
     * @param n  number of cycles to delay
     * @param en enable the shift
     */
-  def apply[T <: Data](in: T, n: Int, en: Bool): Seq[T] = macro SourceInfoTransform.inNEnArg
+  inline def apply[T <: Data](in: T, n: Int, en: Bool): Seq[T] = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(in, n, en)}
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](
@@ -157,7 +163,7 @@ object ShiftRegisters {
     * @param in input to delay
     * @param n  number of cycles to delay
     */
-  def apply[T <: Data](in: T, n: Int): Seq[T] = macro SourceInfoTransform.inNArg
+  inline def apply[T <: Data](in: T, n: Int): Seq[T] = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(in, n)}
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](in: T, n: Int)(implicit sourceInfo: SourceInfo): Seq[T] =
@@ -170,7 +176,7 @@ object ShiftRegisters {
     * @param resetData reset value for each register in the shift
     * @param en        enable the shift
     */
-  def apply[T <: Data](in: T, n: Int, resetData: T, en: Bool): Seq[T] = macro SourceInfoTransform.inNResetDataEnArg
+  inline def apply[T <: Data](in: T, n: Int, resetData: T, en: Bool): Seq[T] = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(in, n, resetData, en)}
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](

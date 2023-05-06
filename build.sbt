@@ -39,13 +39,13 @@ emitVersion := {
 lazy val minimalSettings = Seq(
   organization := "org.chipsalliance",
   scalacOptions := Seq("-deprecation", "-feature"),
-  scalaVersion := "3.2.2",
-  crossScalaVersions := Seq("2.13.10", "2.12.17", "3.2.2")
+  scalaVersion := "3.3.0-RC5",
+  crossScalaVersions := Seq("2.13.10", "2.12.17", "3.3.0-RC5")
 )
 
 lazy val crossSettings = Seq(
-  scalaVersion := "3.2.2"
-//  crossScalaVersions ++= Seq("2.13.10", "3.2.2")
+  scalaVersion := "3.3.0-RC5"
+//  crossScalaVersions ++= Seq("2.13.10", "3.3.0-RC5")
 )
 
 lazy val commonSettings = minimalSettings ++ Seq(

@@ -27,7 +27,10 @@ object FillInterleaved {
     *
     * Output data-equivalent to in(size(in)-1) (n times) ## ... ## in(1) (n times) ## in(0) (n times)
     */
-  def apply(n: Int, in: UInt): UInt = macro SourceInfoTransform.nInArg
+  inline def apply(n: Int, in: UInt): UInt = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_apply(n, in)
+  }
 
   /** @group SourceInfoTransformMacro */
   def do_apply(n: Int, in: UInt)(implicit sourceInfo: SourceInfo): UInt =
@@ -37,7 +40,10 @@ object FillInterleaved {
     *
     * Output data-equivalent to in(size(in)-1) (n times) ## ... ## in(1) (n times) ## in(0) (n times)
     */
-  def apply(n: Int, in: Seq[Bool]): UInt = macro SourceInfoTransform.nInArg
+  inline def apply(n: Int, in: Seq[Bool]): UInt = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_apply(n, in)
+  }
 
   /** @group SourceInfoTransformMacro */
   def do_apply(n: Int, in: Seq[Bool])(implicit sourceInfo: SourceInfo): UInt =
@@ -64,14 +70,14 @@ object FillInterleaved {
   */
 object PopCount {
 
-  def apply(in: Iterable[Bool]): UInt = macro SourceInfoTransform.inArg
+  inline def apply(in: Iterable[Bool]): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(in)}
 
   /** @group SourceInfoTransformMacro */
   def do_apply(in: Iterable[Bool])(implicit sourceInfo: SourceInfo): UInt = _apply_impl(
     in.toSeq
   )
 
-  def apply(in: Bits): UInt = macro SourceInfoTransform.inArg
+  inline def apply(in: Bits): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(in)}
 
   /** @group SourceInfoTransformMacro */
   def do_apply(in: Bits)(implicit sourceInfo: SourceInfo): UInt = _apply_impl(
@@ -97,7 +103,7 @@ object Fill {
     * Output data-equivalent to x ## x ## ... ## x (n repetitions).
     * @throws java.lang.IllegalArgumentException if `n` is less than zero
     */
-  def apply(n: Int, x: UInt): UInt = macro SourceInfoTransform.nxArg
+  inline def apply(n: Int, x: UInt): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(n, x)}
 
   /** @group SourceInfoTransformMacro */
   def do_apply(n: Int, x: UInt)(implicit sourceInfo: SourceInfo): UInt = {
@@ -148,7 +154,7 @@ object Reverse {
         Cat(doit(in(half - 1, 0), half), doit(in(length - 1, half), length - half))
     }
 
-  def apply(in: UInt): UInt = macro SourceInfoTransform.inArg
+  inline def apply(in: UInt): UInt = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_apply(in)}
 
   /** @group SourceInfoTransformMacro */
   def do_apply(in: UInt)(implicit sourceInfo: SourceInfo): UInt = doit(in, in.getWidth)

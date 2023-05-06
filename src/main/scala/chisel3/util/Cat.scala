@@ -23,7 +23,10 @@ object Cat {
   /** Concatenates the argument data elements, in argument order, together. The first argument
     * forms the most significant bits, while the last argument forms the least significant bits.
     */
-  def apply[T <: Bits](a: T, r: T*): UInt = macro SourceInfoTransform.arArg
+  def apply[T <: Bits](a: T, r: T*): UInt = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_apply(a, r*)
+  }
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Bits](a: T, r: T*)(implicit sourceInfo: SourceInfo): UInt =
@@ -36,7 +39,10 @@ object Cat {
     * Equivalent to r(0) ## r(1) ## ... ## r(n-1).
     * @note This returns a `0.U` if applied to a zero-element `Vec`.
     */
-  def apply[T <: Bits](r: Seq[T]): UInt = macro SourceInfoTransform.rArg
+  inline def apply[T <: Bits](r: Seq[T]): UInt = {
+    given sourceInfo: SourceInfo = summonInline[SourceInfo]
+    do_apply(r)
+  }
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Bits](r: Seq[T])(implicit sourceInfo: SourceInfo): UInt =

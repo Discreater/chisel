@@ -52,12 +52,12 @@ abstract class EnumType(private[chisel3] val factory: ChiselEnum, selfAnnotating
     this := factory.apply(that.asUInt)
   }
 
-  final def ===(that: EnumType): Bool = macro SourceInfoTransform.thatArg
-  final def =/=(that: EnumType): Bool = macro SourceInfoTransform.thatArg
-  final def <(that:   EnumType): Bool = macro SourceInfoTransform.thatArg
-  final def <=(that:  EnumType): Bool = macro SourceInfoTransform.thatArg
-  final def >(that:   EnumType): Bool = macro SourceInfoTransform.thatArg
-  final def >=(that:  EnumType): Bool = macro SourceInfoTransform.thatArg
+  final inline def ===(that: EnumType): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_===(that)}
+  final inline def =/=(that: EnumType): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_=/=(that)}
+  final inline def <(that:   EnumType): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_<(that)}
+  final inline def <=(that:  EnumType): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_<=(that)}
+  final inline def >(that:   EnumType): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_>(that)}
+  final inline def >=(that:  EnumType): Bool = {given sourceInfo: SourceInfo = summonInline[SourceInfo]; do_>=(that)}
 
   def do_===(that: EnumType)(implicit sourceInfo: SourceInfo): Bool =
     compop(sourceInfo, EqualOp, that)
