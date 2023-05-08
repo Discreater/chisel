@@ -37,7 +37,7 @@ object Probe extends ProbeBase with SourceInfoDoc {
 
   /** Mark a Chisel type as with a probe modifier.
     */
-  def apply[T <: Data](source: => T): T = macro chisel3.internal.sourceinfo.ProbeTransform.sourceApply[T]
+  inline def apply[T <: Data](source: => T): T = ${ chisel3.internal.sourceinfo.ProbeTransform.sourceApply[T]('source) }
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](source: => T)(implicit sourceInfo: SourceInfo): T = super.apply(source, false)
@@ -47,7 +47,7 @@ object RWProbe extends ProbeBase with SourceInfoDoc {
 
   /** Mark a Chisel type with a writable probe modifier.
     */
-  def apply[T <: Data](source: => T): T = macro chisel3.internal.sourceinfo.ProbeTransform.sourceApply[T]
+  inline def apply[T <: Data](source: => T): T = ${ chisel3.internal.sourceinfo.ProbeTransform.sourceApply[T]('source) }
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](source: => T)(implicit sourceInfo: SourceInfo): T = super.apply(source, true)

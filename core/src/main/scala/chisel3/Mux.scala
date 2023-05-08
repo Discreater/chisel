@@ -25,7 +25,7 @@ object Mux extends SourceInfoDoc {
     * val muxOut = Mux(data_in === 3.U, 3.U(4.W), 0.U(4.W))
     * }}}
     */
-  def apply[T <: Data](cond: Bool, con: T, alt: T): T = macro MuxTransform.apply[T]
+  inline def apply[T <: Data](cond: Bool, con: T, alt: T): T = ${ MuxTransform.apply[T]('cond, 'con, 'alt)('this) }
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](

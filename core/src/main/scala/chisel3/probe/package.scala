@@ -43,7 +43,7 @@ package object probe extends SourceInfoDoc {
   }
 
   /** Access the value of a probe. */
-  def read[T <: Data](source: T): T = macro chisel3.internal.sourceinfo.ProbeTransform.sourceRead[T]
+  inline def read[T <: Data](source: T): T = ${ chisel3.internal.sourceinfo.ProbeTransform.sourceRead('source) }
 
   /** @group SourceInfoTransformMacro */
   def do_read[T <: Data](source: T)(implicit sourceInfo: SourceInfo): T = {

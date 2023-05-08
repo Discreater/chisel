@@ -24,7 +24,7 @@ object Module extends SourceInfoDoc {
     *
     * @return the input module `m` with Chisel metadata properly set
     */
-  def apply[T <: BaseModule](bc: => T): T = macro InstTransform.apply[T]
+  inline def apply[T <: BaseModule](bc: => T): T = ${ InstTransform.apply[T]('bc)('this) }
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: BaseModule](bc: => T)(implicit sourceInfo: SourceInfo): T = {

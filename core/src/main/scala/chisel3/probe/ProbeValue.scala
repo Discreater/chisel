@@ -28,7 +28,7 @@ private[chisel3] sealed trait ProbeValueBase {
 object ProbeValue extends ProbeValueBase with SourceInfoDoc {
 
   /** Create a read-only probe expression. */
-  def apply[T <: Data](source: T): T = macro chisel3.internal.sourceinfo.ProbeTransform.sourceApply[T]
+  inline def apply[T <: Data](source: T): T = ${ chisel3.internal.sourceinfo.ProbeTransform.sourceApply[T]('source) }
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](source: T)(implicit sourceInfo: SourceInfo): T = super.apply(source, writable = false)
@@ -37,7 +37,7 @@ object ProbeValue extends ProbeValueBase with SourceInfoDoc {
 object RWProbeValue extends ProbeValueBase with SourceInfoDoc {
 
   /** Create a read/write probe expression. */
-  def apply[T <: Data](source: T): T = macro chisel3.internal.sourceinfo.ProbeTransform.sourceApply[T]
+  inline def apply[T <: Data](source: T): T = ${ chisel3.internal.sourceinfo.ProbeTransform.sourceApply[T]('source) }
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](source: T)(implicit sourceInfo: SourceInfo): T = super.apply(source, writable = true)

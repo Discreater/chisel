@@ -9,6 +9,10 @@ import scala.language.experimental.macros
 import scala.reflect.macros.blackbox.Context
 import scala.reflect.macros.whitebox
 
+import chisel3.{UInt, Bool, Bits}
+import chisel3.experimental.SourceInfo
+
+import scala.quoted.*
 /** Transforms a function call so that it can both provide implicit-style source information and
   * have a chained apply call. Without macros, only one is possible, since having a implicit
   * argument in the definition will cause the compiler to interpret a chained apply as an
@@ -18,93 +22,150 @@ import scala.reflect.macros.whitebox
   * The macro transforms the public-facing function into a call to an internal function that takes
   * an explicit SourceInfo by inserting an implicitly[SourceInfo] as the explicit argument.
   */
-trait SourceInfoTransformMacro {
-  val c: Context
-  import c.universe._
-  def thisObj: Tree = c.prefix.tree
-  def implicitSourceInfo = q"implicitly[_root_.chisel3.experimental.SourceInfo]"
+trait SourceInfoTransformMacro(using q: Quotes) {
+  import q.reflect.*
+  def thisObj: Expr[Any]
+  inline def implicitSourceInfo: Expr[SourceInfo] = {
+    Implicits.search(TypeRepr.of[SourceInfo]) match {
+      case success: ImplicitSearchSuccess => success.tree.asExprOf[SourceInfo]
+      case _ => report.errorAndAbort("Unable to find implicit SourceInfo")
+    }
+  }
 }
-
-// Workaround for https://github.com/sbt/sbt/issues/3966
-object UIntTransform
-class UIntTransform(val c: Context) extends SourceInfoTransformMacro {
-  import c.universe._
-  def bitset(off: c.Tree, dat: c.Tree): c.Tree = {
-    q"$thisObj.do_bitSet($off, $dat)($implicitSourceInfo)"
+def implicitSourceInfo(using q: Quotes): Expr[SourceInfo] = {
+  import q.reflect.*
+  Expr.summon[SourceInfo] match {
+    case Some(sourceInfo) => sourceInfo
+    case None => report.errorAndAbort("Unable to find implicit SourceInfo")
   }
 }
 
-class ProbeTransform(val c: Context) extends SourceInfoTransformMacro {
-  import c.universe._
-  def sourceApply[T: c.WeakTypeTag](source: c.Tree): c.Tree = {
-    val tpe = weakTypeOf[T]
-    q"$thisObj.do_apply[$tpe]($source)($implicitSourceInfo)"
-  }
-  def sourceRead[T: c.WeakTypeTag](source: c.Tree): c.Tree = {
-    val tpe = weakTypeOf[T]
-    q"$thisObj.do_read[$tpe]($source)($implicitSourceInfo)"
+def applySourceInfo[T](using q: Quotes)(fun: q.reflect.Term): Expr[T] = {
+  import q.reflect.* 
+  Implicits.search(TypeRepr.of[SourceInfo]) match {
+    case success: ImplicitSearchSuccess => {
+      val sourceInfo = success.tree.asExprOf[SourceInfo]
+      Apply(fun, List(sourceInfo.asTerm)).asExprOf[T]
+    }
+    case _ => report.errorAndAbort("Unable to find implicit SourceInfo")
   }
 }
 
-// Workaround for https://github.com/sbt/sbt/issues/3966
-object InstTransform
+def resolveThis(using Quotes): quotes.reflect.Term = {
+  import quotes.reflect.* 
+  var sym = Symbol.spliceOwner.owner
+  if sym.isClassDef then {
+    return This(sym)
+  }
+  if sym.isPackageDef then {
+    return Ident(sym.termRef)
+  }
+  report.errorAndAbort(s"unknown owner: ${sym.fullName}")
+}
+
+object UIntTransform {
+  def bitset(off: Expr[UInt], dat: Expr[Bool])(using q: Quotes): Expr[UInt] = {
+    import q.reflect.*
+    val sourceInfo = implicitSourceInfo
+    applySourceInfo(Apply(Select.unique(resolveThis, "do_bitSet"), List(off.asTerm, dat.asTerm)))
+  }
+}
+
+object ProbeTransform {
+  def sourceApply[T](source: Expr[T])(using q: Quotes, t: Type[T]): Expr[T] = {
+    import q.reflect.* 
+    val sourceInfo = implicitSourceInfo
+  
+    Apply(Apply(TypeApply(Select.unique(resolveThis, "do_apply"), List(TypeTree.of[T])), List(source.asTerm)), List(sourceInfo.asTerm)).asExprOf[T]
+  }
+
+  def sourceRead[T](source: Expr[T])(using q: Quotes, t: Type[T]): Expr[T] = {
+    import q.reflect.* 
+    val sourceInfo = implicitSourceInfo
+    Apply(Apply(TypeApply(Select.unique(resolveThis, "do_read"), List(TypeTree.of[T])), List(source.asTerm)), List(sourceInfo.asTerm)).asExprOf[T]
+  }
+}
+
 // Module instantiation transform
-class InstTransform(val c: Context) extends SourceInfoTransformMacro {
-  import c.universe._
-  def apply[T: c.WeakTypeTag](bc: c.Tree): c.Tree = {
-    q"$thisObj.do_apply($bc)($implicitSourceInfo)"
+
+object InstTransform {
+  // TODO: check whether we can use `T` directly, since the `bc` type in `apply` is `=> T`
+  def apply[T <: chisel3.experimental.BaseModule](bc: Expr[T])(using q: Quotes, tpe: Type[T]) = {
+    import q.reflect.*
+    val sourceInfo = implicitSourceInfo
+    Apply(Apply(TypeApply(Select.unique())))
+    '{ ${self}.do_apply(${bc})(using $sourceInfo) }
   }
 }
 
-// Workaround for https://github.com/sbt/sbt/issues/3966
-object DefinitionTransform
+
 // Module instantiation transform
-class DefinitionTransform(val c: Context) extends SourceInfoTransformMacro {
-  import c.universe._
-  def apply[T: c.WeakTypeTag](proto: c.Tree): c.Tree = {
-    q"$thisObj.do_apply($proto)($implicitSourceInfo)"
+
+object DefinitionTransform {
+  import chisel3.experimental.BaseModule
+  import chisel3.experimental.hierarchy.core.IsInstantiable
+  import chisel3.experimental.hierarchy.core.Definition
+  // TODO: check whether we can use `T` directly, since the `bc` type in `apply` is `=> T` 
+  def apply[T <: BaseModule with IsInstantiable](proto: Expr[T])(self: Expr[Definition.type])(using q: Quotes): Expr[Definition[T]] = {
+    import q.reflect.* 
+    val sourceInfo = implicitSourceInfo
+    '{ ${self}.do_apply(${proto})(using $sourceInfo) }
   }
 }
 
-object DefinitionWrapTransform
 // Module instantiation transform
-class DefinitionWrapTransform(val c: Context) extends SourceInfoTransformMacro {
-  import c.universe._
-  def wrap[T: c.WeakTypeTag](proto: c.Tree): c.Tree = {
-    q"$thisObj.do_wrap($proto)($implicitSourceInfo)"
-  }
-}
+// object DefinitionWrapTransform {
+//     def wrap[T <: chisel3.experimental.BaseModule with chisel3.experimental.hierarchy.core.IsInstantiable](proto: Expr[T], self: Expr[chisel3.experimental.hierarchy.core.Definition.type])(using q: Quotes): Expr[chisel3.experimental.hierarchy.core.Definition[T]] = {
+//     import q.reflect.* 
+//     val sourceInfo = implicitSourceInfo
+//     '{ ${self}.do_wrap(${proto})($sourceInfo) }
+//   }
+// }
 
-// Workaround for https://github.com/sbt/sbt/issues/3966
-object InstanceTransform
 // Module instantiation transform
-class InstanceTransform(val c: Context) extends SourceInfoTransformMacro {
-  import c.universe._
-  def apply[T: c.WeakTypeTag](definition: c.Tree): c.Tree = {
-    q"$thisObj.do_apply($definition)($implicitSourceInfo)"
+object InstanceTransform {
+  import chisel3.experimental.BaseModule
+  import chisel3.experimental.hierarchy.core.{Definition, IsInstantiable, Instance}
+  def apply[T <: BaseModule with IsInstantiable](definition: Expr[Definition[T]])(self: Expr[Instance.type])(using q: Quotes): Expr[Instance[T]] = {
+    import q.reflect.* 
+    val sourceInfo = implicitSourceInfo
+    '{ ${self}.do_apply(${definition})(using $sourceInfo) }
   }
 }
 
-// Workaround for https://github.com/sbt/sbt/issues/3966
-object MemTransform
-class MemTransform(val c: Context) extends SourceInfoTransformMacro {
-  import c.universe._
-  def apply[T: c.WeakTypeTag](size: c.Tree, t: c.Tree): c.Tree = {
-    q"$thisObj.do_apply($size, $t)($implicitSourceInfo)"
+object MemTransform {
+  import chisel3.{Data}
+  def apply[T <: Data, M[T]](size: Expr[Any], t: Expr[T])(self: Expr[Any])(using q: Quotes): Expr[M[T]] = {
+    import q.reflect.*
+    val sourceInfo = implicitSourceInfo
+    // Implicits.search(TypeRepr.of[SourceInfo]) match {
+    //   case suc: ImplicitSearchSuccess => suc.tree.asExprOf
+    // }
+    Apply(Apply(Select.unique(self.asTerm, "do_apply"), List(size.asTerm, t.asTerm)), List(sourceInfo.asTerm)).asExprOf[M[T]]
   }
-  def apply_ruw[T: c.WeakTypeTag](size: c.Tree, t: c.Tree, ruw: c.Tree): c.Tree = {
-    q"$thisObj.do_apply($size, $t, $ruw)($implicitSourceInfo)"
+
+  def apply_ruw[T <: Data, M[T]](size: Expr[Any], t: Expr[T], ruw: Expr[Any])(self: Expr[Any])(using q: Quotes): Expr[M[T]] = {
+    import q.reflect.*
+    val sourceInfo = implicitSourceInfo
+    Apply(Apply(Select.unique(self.asTerm, "do_apply"), List(size.asTerm, t.asTerm, ruw.asTerm)), List(sourceInfo.asTerm)).asExprOf[M[T]]
   }
 }
 
-// Workaround for https://github.com/sbt/sbt/issues/3966
-object MuxTransform
-class MuxTransform(val c: Context) extends SourceInfoTransformMacro {
-  import c.universe._
-  def apply[T: c.WeakTypeTag](cond: c.Tree, con: c.Tree, alt: c.Tree): c.Tree = {
-    val tpe = weakTypeOf[T]
-    q"$thisObj.do_apply[$tpe]($cond, $con, $alt)($implicitSourceInfo)"
-  }
+object MuxTransform {
+  import chisel3.{Data, Bool}
+  def apply[T <: Data](cond: Expr[Bool], con: Expr[T], alt: Expr[T])(self: Expr[Any])(using q: Quotes): Expr[T] = {
+    import q.reflect.*
+    val sourceInfo = implicitSourceInfoTerm
+    Apply(Apply(Select.unique(self.asTerm, "do_apply"), List(cond.asTerm, con.asTerm, alt.asTerm)), List(sourceInfo)).asExprOf[T]
+  } 
+}
+
+object MuxLookupTransform {
+  import chisel3.{Data, UInt}
+  def applyCurried[T <: Data](key: Expr[UInt], default: Expr[T])(mapping: Expr[Seq[(UInt, T)]])(self: Expr[Any])(using q: Quotes): Expr[T] = {
+    import q.reflect.* 
+    Apply(Apply(Select.unique(self.asTerm, "do_apply"), List(key.asTerm, default.asTerm, mapping.asTerm)), List(implicitSourceInfoTerm))
+  } 
 }
 
 class MuxLookupTransform(val c: Context) extends SourceInfoTransformMacro {

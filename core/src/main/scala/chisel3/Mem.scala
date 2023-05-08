@@ -20,14 +20,14 @@ object Mem {
     * @param size number of elements in the memory
     * @param t data type of memory element
     */
-  def apply[T <: Data](size: BigInt, t: T): Mem[T] = macro MemTransform.apply[T]
+  inline def apply[T <: Data](size: BigInt, t: T): Mem[T] = ${ MemTransform.apply[T, Mem]('size, 't)('this) }
 
   /** Creates a combinational/asynchronous-read, sequential/synchronous-write [[Mem]].
     *
     * @param size number of elements in the memory
     * @param t data type of memory element
     */
-  def apply[T <: Data](size: Int, t: T): Mem[T] = macro MemTransform.apply[T]
+  inline def apply[T <: Data](size: Int, t: T): Mem[T] = ${ MemTransform.apply[T, Mem]('size, 't)('this) }
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](
@@ -317,16 +317,16 @@ object SyncReadMem {
     * @param size number of elements in the memory
     * @param t data type of memory element
     */
-  def apply[T <: Data](size: BigInt, t: T): SyncReadMem[T] = macro MemTransform.apply[T]
-  def apply[T <: Data](size: BigInt, t: T, ruw: ReadUnderWrite): SyncReadMem[T] = macro MemTransform.apply_ruw[T]
+  inline def apply[T <: Data](size: BigInt, t: T): SyncReadMem[T] = ${ MemTransform.apply[T, SyncReadMem]('size, 't)('this) }
+  inline def apply[T <: Data](size: BigInt, t: T, ruw: ReadUnderWrite): SyncReadMem[T] = ${ MemTransform.apply_ruw[T, SyncReadMem]('size, 't, 'ruw)('this) }
 
   /** Creates a sequential/synchronous-read, sequential/synchronous-write [[SyncReadMem]].
     *
     * @param size number of elements in the memory
     * @param t data type of memory element
     */
-  def apply[T <: Data](size: Int, t: T): SyncReadMem[T] = macro MemTransform.apply[T]
-  def apply[T <: Data](size: Int, t: T, ruw: ReadUnderWrite): SyncReadMem[T] = macro MemTransform.apply_ruw[T]
+  inline def apply[T <: Data](size: Int, t: T): SyncReadMem[T] = ${ MemTransform.apply[T, SyncReadMem]('size, 't)('this) }
+  inline def apply[T <: Data](size: Int, t: T, ruw: ReadUnderWrite): SyncReadMem[T] = ${ MemTransform.apply_ruw[T, SyncReadMem]('size, 't, 'ruw)('this) }
 
   /** @group SourceInfoTransformMacro */
   def do_apply[T <: Data](

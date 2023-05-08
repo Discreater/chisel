@@ -7,6 +7,7 @@ import scala.language.experimental.macros
 import chisel3._
 import chisel3.experimental.hierarchy.{InstantiableClone, ModuleClone}
 import chisel3.internal.{throwException, Builder}
+import chisel3.internal.sourceinfo.InstanceTransform
 import chisel3.experimental.{BaseModule, ExtModule, SourceInfo}
 import chisel3.internal.firrtl.{Component, DefBlackBox, DefModule, Port}
 import firrtl.annotations.IsModule
@@ -99,8 +100,7 @@ object Instance extends SourceInfoDoc {
     * @param definition the Module being created
     * @return an instance of the module definition
     */
-  def apply[T <: BaseModule with IsInstantiable](definition: Definition[T]): Instance[T] =
-    macro InstanceTransform.apply[T]
+  inline def apply[T <: BaseModule with IsInstantiable](definition: Definition[T]): Instance[T] = ${ InstanceTransform.apply[T]('definition)('this) }
 
   /** A constructs an [[Instance]] from a [[Definition]]
     *
