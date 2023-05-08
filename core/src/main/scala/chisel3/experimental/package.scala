@@ -49,7 +49,7 @@ package object experimental {
     def apply(
       proto: BaseModule
     )(
-      implicit sourceInfo: chisel3.experimental.SourceInfo
+      using sourceInfo: chisel3.experimental.SourceInfo
     ): ClonePorts = {
       BaseModule.cloneIORecord(proto)
     }
@@ -82,7 +82,7 @@ package object experimental {
   val Direction = ActualDirection
 
   /** The same as [[IO]] except there is no prefix for the name of the val */
-  def FlatIO[T <: Record](gen: => T)(implicit sourceInfo: SourceInfo): T = noPrefix {
+  def FlatIO[T <: Record](gen: => T)(using sourceInfo: SourceInfo): T = noPrefix {
     import dataview._
     def coerceDirection(d: Data) = {
       import chisel3.{SpecifiedDirection => SD}
@@ -145,7 +145,7 @@ package object experimental {
 
   object BundleLiterals {
     implicit class AddBundleLiteralConstructor[T <: Record](x: T) {
-      def Lit(elems: (T => (Data, Data))*)(implicit sourceInfo: SourceInfo): T = {
+      def Lit(elems: (T => (Data, Data))*)(using sourceInfo: SourceInfo): T = {
         x._makeLit(elems: _*)
       }
     }
@@ -162,7 +162,7 @@ package object experimental {
         * @param elems tuples of an index and a literal value
         * @return
         */
-      def Lit(elems: (Int, T)*)(implicit sourceInfo: SourceInfo): Vec[T] = {
+      def Lit(elems: (Int, T)*)(using sourceInfo: SourceInfo): Vec[T] = {
         x._makeLit(elems: _*)
       }
     }
@@ -172,7 +172,7 @@ package object experimental {
       /** This provides an literal construction method for cases using
         * object `Vec` as in `Vec.Lit(1.U, 2.U)`
         */
-      def Lit[T <: Data](elems: T*)(implicit sourceInfo: SourceInfo): Vec[T] = {
+      def Lit[T <: Data](elems: T*)(using sourceInfo: SourceInfo): Vec[T] = {
         require(elems.nonEmpty, s"Lit.Vec(...) must have at least one element")
         val indexElements = elems.zipWithIndex.map { case (element, index) => (index, element) }
         val widestElement = elems.maxBy(_.getWidth)

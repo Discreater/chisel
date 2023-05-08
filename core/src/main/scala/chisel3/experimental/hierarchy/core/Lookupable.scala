@@ -53,7 +53,7 @@ object Lookupable {
     data:    T,
     context: BaseModule
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): T = {
     internal.requireIsHardware(data, "cross module reference type")
     data._parent match {
@@ -80,7 +80,7 @@ object Lookupable {
     ioMap:   Option[Map[Data, Data]],
     context: Option[BaseModule]
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): B = {
     def impl[C <: Data](d: C): C = d match {
       case x: Data if ioMap.nonEmpty && ioMap.get.contains(x) => ioMap.get(x).asInstanceOf[C]
@@ -160,7 +160,7 @@ object Lookupable {
     ioMap:   Option[Map[Data, Data]],
     context: Option[BaseModule]
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): B = {
     // alias to shorten lookups
     def lookupData[C <: Data](d: C) = doLookupData(d, cache, ioMap, context)
@@ -237,7 +237,7 @@ object Lookupable {
     module:  Underlying[T],
     context: BaseModule
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Underlying[T] = {
     // Recursive call
     def rec[A <: BaseModule](m: A): Underlying[A] = {
@@ -294,7 +294,7 @@ object Lookupable {
     def instanceLookup[A](that:   A => B, instance:   Instance[A]):   C = that(instance.proto)
   }
 
-  implicit def lookupInstance[B <: BaseModule](implicit sourceInfo: SourceInfo): Lookupable[Instance[B]] =
+  implicit def lookupInstance[B <: BaseModule](using sourceInfo: SourceInfo): Lookupable[Instance[B]] =
     new Lookupable[Instance[B]] {
       type C = Instance[B]
       def definitionLookup[A](that: A => Instance[B], definition: Definition[A]): C = {
@@ -311,7 +311,7 @@ object Lookupable {
       }
     }
 
-  implicit def lookupModule[B <: BaseModule](implicit sourceInfo: SourceInfo): Lookupable[B] =
+  implicit def lookupModule[B <: BaseModule](using sourceInfo: SourceInfo): Lookupable[B] =
     new Lookupable[B] {
       type C = Instance[B]
       def definitionLookup[A](that: A => B, definition: Definition[A]): C = {
@@ -328,7 +328,7 @@ object Lookupable {
       }
     }
 
-  implicit def lookupData[B <: Data](implicit sourceInfo: SourceInfo): Lookupable[B] =
+  implicit def lookupData[B <: Data](using sourceInfo: SourceInfo): Lookupable[B] =
     new Lookupable[B] {
       type C = B
       def definitionLookup[A](that: A => B, definition: Definition[A]): C = {
@@ -368,7 +368,7 @@ object Lookupable {
     mem:     T,
     context: BaseModule
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): T = {
     mem._parent match {
       case None => mem
@@ -394,7 +394,7 @@ object Lookupable {
     }
   }
 
-  implicit def lookupMem[B <: MemBase[_]](implicit sourceInfo: SourceInfo): Lookupable[B] =
+  implicit def lookupMem[B <: MemBase[_]](using sourceInfo: SourceInfo): Lookupable[B] =
     new Lookupable[B] {
       type C = B
       def definitionLookup[A](that: A => B, definition: Definition[A]): C = {
@@ -407,7 +407,7 @@ object Lookupable {
 
   import scala.language.higherKinds // Required to avoid warning for lookupIterable type parameter
   implicit def lookupIterable[B, F[_] <: Iterable[_]](
-    implicit sourceInfo: SourceInfo,
+    using sourceInfo: SourceInfo,
     lookupable:          Lookupable[B]
   ): Lookupable[F[B]] = new Lookupable[F[B]] {
     type C = F[lookupable.C]
@@ -422,7 +422,7 @@ object Lookupable {
     }
   }
   implicit def lookupOption[B](
-    implicit sourceInfo: SourceInfo,
+    using sourceInfo: SourceInfo,
     lookupable:          Lookupable[B]
   ): Lookupable[Option[B]] = new Lookupable[Option[B]] {
     type C = Option[lookupable.C]
@@ -437,7 +437,7 @@ object Lookupable {
     }
   }
   implicit def lookupEither[L, R](
-    implicit sourceInfo: SourceInfo,
+    using sourceInfo: SourceInfo,
     lookupableL:         Lookupable[L],
     lookupableR:         Lookupable[R]
   ): Lookupable[Either[L,R]] = new Lookupable[Either[L, R]] {
@@ -458,7 +458,7 @@ object Lookupable {
   }
 
   implicit def lookupTuple2[X, Y](
-    implicit sourceInfo: SourceInfo,
+    using sourceInfo: SourceInfo,
     lookupableX:         Lookupable[X],
     lookupableY:         Lookupable[Y]
   ): Lookupable[(X, Y)] = new Lookupable[(X, Y)] {
@@ -478,7 +478,7 @@ object Lookupable {
   }
 
   implicit def lookupIsInstantiable[B <: IsInstantiable](
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Lookupable[B] = new Lookupable[B] {
     type C = Instance[B]
     def definitionLookup[A](that: A => B, definition: Definition[A]): C = {
@@ -499,7 +499,7 @@ object Lookupable {
     }
   }
 
-  implicit def lookupIsLookupable[B <: IsLookupable](implicit sourceInfo: SourceInfo): SimpleLookupable[B] =
+  implicit def lookupIsLookupable[B <: IsLookupable](using sourceInfo: SourceInfo): SimpleLookupable[B] =
     new SimpleLookupable[B]()
 
   implicit val lookupInt: SimpleLookupable[Int] = new SimpleLookupable[Int]()

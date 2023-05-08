@@ -114,7 +114,7 @@ object Instantiate {
     args: K,
     f:    K => A
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Instance[A] = {
     val tag = implicitly[ru.WeakTypeTag[A]]
     // Include type of module in key since different modules could have the same arguments

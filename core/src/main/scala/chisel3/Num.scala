@@ -3,8 +3,6 @@
 package chisel3
 import scala.compiletime.summonInline
 
-import chisel3.internal.sourceinfo.SourceInfoTransform
-
 import scala.language.experimental.macros
 import chisel3.experimental.SourceInfo
 
@@ -42,10 +40,7 @@ trait Num[T <: Data] {
     * $maxWidth
     * @group Arithmetic
     */
-  final def +(that: T): T = macro SourceInfoTransform.thatArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_+(that: T)(implicit sourceInfo: SourceInfo): T
+  final def +(that: T)(using sourceInfo: SourceInfo): T
 
   /** Multiplication operator
     *
@@ -55,10 +50,7 @@ trait Num[T <: Data] {
     * $singleCycleMul
     * @group Arithmetic
     */
-  final def *(that: T): T = macro SourceInfoTransform.thatArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_*(that: T)(implicit sourceInfo: SourceInfo): T
+  final def *(that: T)(using sourceInfo: SourceInfo): T
 
   /** Division operator
     *
@@ -68,10 +60,7 @@ trait Num[T <: Data] {
     * @todo full rules
     * @group Arithmetic
     */
-  final def /(that: T): T = macro SourceInfoTransform.thatArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_/(that: T)(implicit sourceInfo: SourceInfo): T
+  final def /(that: T)(using sourceInfo: SourceInfo): T
 
   /** Modulo operator
     *
@@ -80,10 +69,7 @@ trait Num[T <: Data] {
     * $singleCycleDiv
     * @group Arithmetic
     */
-  final def %(that: T): T = macro SourceInfoTransform.thatArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_%(that: T)(implicit sourceInfo: SourceInfo): T
+  final def %(that: T)(using sourceInfo: SourceInfo): T
 
   /** Subtraction operator
     *
@@ -92,10 +78,7 @@ trait Num[T <: Data] {
     * $maxWidthPlusOne
     * @group Arithmetic
     */
-  final def -(that: T): T = macro SourceInfoTransform.thatArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_-(that: T)(implicit sourceInfo: SourceInfo): T
+  final def -(that: T)(using sourceInfo: SourceInfo): T
 
   /** Less than operator
     *
@@ -103,10 +86,7 @@ trait Num[T <: Data] {
     * @return a hardware [[Bool]] asserted if this $coll is less than `that`
     * @group Comparison
     */
-  final def <(that: T): Bool = macro SourceInfoTransform.thatArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_<(that: T)(implicit sourceInfo: SourceInfo): Bool
+  final def <(that: T)(using sourceInfo: SourceInfo): Bool
 
   /** Less than or equal to operator
     *
@@ -114,10 +94,7 @@ trait Num[T <: Data] {
     * @return a hardware [[Bool]] asserted if this $coll is less than or equal to `that`
     * @group Comparison
     */
-  final def <=(that: T): Bool = macro SourceInfoTransform.thatArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_<=(that: T)(implicit sourceInfo: SourceInfo): Bool
+  final def <=(that: T)(using sourceInfo: SourceInfo): Bool
 
   /** Greater than operator
     *
@@ -125,10 +102,7 @@ trait Num[T <: Data] {
     * @return a hardware [[Bool]] asserted if this $coll is greater than `that`
     * @group Comparison
     */
-  final def >(that: T): Bool = macro SourceInfoTransform.thatArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_>(that: T)(implicit sourceInfo: SourceInfo): Bool
+  final def >(that: T)(using sourceInfo: SourceInfo): Bool
 
   /** Greater than or equal to operator
     *
@@ -136,10 +110,7 @@ trait Num[T <: Data] {
     * @return a hardware [[Bool]] asserted if this $coll is greather than or equal to `that`
     * @group Comparison
     */
-  final def >=(that: T): Bool = macro SourceInfoTransform.thatArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_>=(that: T)(implicit sourceInfo: SourceInfo): Bool
+  final def >=(that: T)(using sourceInfo: SourceInfo): Bool
 
   /** Absolute value operator
     *
@@ -147,10 +118,7 @@ trait Num[T <: Data] {
     * $unchangedWidth
     * @group Arithmetic
     */
-  final def abs: T = macro SourceInfoTransform.noArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_abs(implicit sourceInfo: SourceInfo): T
+  final def abs(using sourceInfo: SourceInfo): T
 
   /** Minimum operator
     *
@@ -159,10 +127,7 @@ trait Num[T <: Data] {
     * $maxWidth
     * @group Arithmetic
     */
-  final def min(that: T): T = macro SourceInfoTransform.thatArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_min(that: T)(implicit sourceInfo: SourceInfo): T =
+  final def min(that: T)(using sourceInfo: SourceInfo): T =
     Mux(this < that, this.asInstanceOf[T], that)
 
   /** Maximum operator
@@ -172,10 +137,7 @@ trait Num[T <: Data] {
     * $maxWidth
     * @group Arithmetic
     */
-  final def max(that: T): T = macro SourceInfoTransform.thatArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_max(that: T)(implicit sourceInfo: SourceInfo): T =
+  final def max(that: T)(using sourceInfo: SourceInfo): T =
     Mux(this < that, that, this.asInstanceOf[T])
 }
 

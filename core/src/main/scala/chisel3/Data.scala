@@ -157,7 +157,7 @@ private[chisel3] object cloneSupertype {
     elts:        Seq[T],
     createdType: String
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): T = {
     require(!elts.isEmpty, s"can't create $createdType with no inputs")
 
@@ -513,13 +513,13 @@ abstract class Data extends HasId with NamedComponent with SourceInfoDoc {
   // TODO: refactor away this, this is outside the scope of Data
   private[chisel3] def allElements: Seq[Element]
 
-  private[chisel3] def badConnect(that: Data)(implicit sourceInfo: SourceInfo): Unit =
+  private[chisel3] def badConnect(that: Data)(using sourceInfo: SourceInfo): Unit =
     throwException(s"cannot connect ${this} and ${that}")
 
   private[chisel3] def connect(
     that: Data
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Unit = {
     requireIsHardware(this, "data to be connected")
     requireIsHardware(that, "data to be connected")
@@ -540,7 +540,7 @@ abstract class Data extends HasId with NamedComponent with SourceInfoDoc {
   private[chisel3] def bulkConnect(
     that: Data
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Unit = {
     requireIsHardware(this, s"data to be bulk-connected")
     requireIsHardware(that, s"data to be bulk-connected")
@@ -709,7 +709,7 @@ abstract class Data extends HasId with NamedComponent with SourceInfoDoc {
   }
 
   private[chisel3] def width: Width
-  private[chisel3] def firrtlConnect(that: Data)(implicit sourceInfo: SourceInfo): Unit
+  private[chisel3] def firrtlConnect(that: Data)(using sourceInfo: SourceInfo): Unit
 
   /** Internal API; Chisel users should look at chisel3.chiselTypeOf(...).
     *
@@ -745,7 +745,7 @@ abstract class Data extends HasId with NamedComponent with SourceInfoDoc {
     * @param that the Data to connect from
     * @group connection
     */
-  final def :=(that: => Data)(implicit sourceInfo: SourceInfo): Unit = {
+  final def :=(that: => Data)(using sourceInfo: SourceInfo): Unit = {
     prefix(this) {
       this.connect(that)(sourceInfo)
     }
@@ -762,7 +762,7 @@ abstract class Data extends HasId with NamedComponent with SourceInfoDoc {
     * @param that the Data to connect from
     * @group connection
     */
-  final def <>(that: => Data)(implicit sourceInfo: SourceInfo): Unit = {
+  final def <>(that: => Data)(using sourceInfo: SourceInfo): Unit = {
     prefix(this) {
       this.bulkConnect(that)(sourceInfo)
     }
@@ -799,10 +799,7 @@ abstract class Data extends HasId with NamedComponent with SourceInfoDoc {
     * @note bit widths are NOT checked, may pad or drop bits from input
     * @note that should have known widths
     */
-  def asTypeOf[T <: Data](that: T): T = macro SourceInfoTransform.thatArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_asTypeOf[T <: Data](that: T)(implicit sourceInfo: SourceInfo): T = {
+  def asTypeOf[T <: Data](that: T)(using sourceInfo: SourceInfo): T = {
     val thatCloned = Wire(that.cloneTypeFull)
     thatCloned.connectFromBits(this.asUInt)
     thatCloned
@@ -813,7 +810,7 @@ abstract class Data extends HasId with NamedComponent with SourceInfoDoc {
   private[chisel3] def connectFromBits(
     that: Bits
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Unit
 
   /** Reinterpret cast to UInt.
@@ -823,10 +820,7 @@ abstract class Data extends HasId with NamedComponent with SourceInfoDoc {
     * @note Aggregates are recursively packed with the first element appearing
     * in the least-significant bits of the result.
     */
-  final def asUInt: UInt = macro SourceInfoTransform.noArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_asUInt(implicit sourceInfo: SourceInfo): UInt
+  final def asUInt(using sourceInfo: SourceInfo): UInt
 
   /** Default pretty printing */
   def toPrintable: Printable
@@ -924,7 +918,7 @@ object Data {
     *
     * @param lhs The [[Data]] hardware on the left-hand side of the equality
     */
-  implicit class DataEquality[T <: Data](lhs: T)(implicit sourceInfo: SourceInfo) {
+  implicit class DataEquality[T <: Data](lhs: T)(using sourceInfo: SourceInfo) {
 
     /** Dynamic recursive equality operator for generic [[Data]]
       *
@@ -990,7 +984,7 @@ trait WireFactory {
   /** Construct a [[Wire]] from a type template
     * @param t The template from which to construct this wire
     */
-  def apply[T <: Data](source: => T)(implicit sourceInfo: SourceInfo): T = {
+  def apply[T <: Data](source: => T)(using sourceInfo: SourceInfo): T = {
     val prevId = Builder.idGen.value
     val t = source // evaluate once (passed by name)
     requireIsChiselType(t, "wire type")
@@ -1034,7 +1028,7 @@ private[chisel3] sealed trait WireDefaultImpl {
     t:    T,
     init: Data
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): T = {
     val x = Wire(t)
     requireIsHardware(init, "wire initializer")
@@ -1051,7 +1045,7 @@ private[chisel3] sealed trait WireDefaultImpl {
     t:    T,
     init: DontCare.type
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): T = {
     applyImpl(t, init)
   }
@@ -1060,14 +1054,14 @@ private[chisel3] sealed trait WireDefaultImpl {
     * @param t The type template used to construct this [[Wire]]
     * @param init The hardware value that will serve as the default value
     */
-  def apply[T <: Data](t: T, init: T)(implicit sourceInfo: SourceInfo): T = {
+  def apply[T <: Data](t: T, init: T)(using sourceInfo: SourceInfo): T = {
     applyImpl(t, init)
   }
 
   /** Construct a [[Wire]] with a default connection
     * @param init The hardware value that will serve as a type template and default value
     */
-  def apply[T <: Data](init: T)(implicit sourceInfo: SourceInfo): T = {
+  def apply[T <: Data](init: T)(using sourceInfo: SourceInfo): T = {
     val model = (init match {
       // If init is a literal without forced width OR any non-literal, let width be inferred
       case init: Bits if !init.litIsForcedWidth.getOrElse(false) => init.cloneTypeWidth(Width())
@@ -1166,12 +1160,12 @@ final case object DontCare extends Element with connectable.ConnectableDocs {
   private[chisel3] def connectFromBits(
     that: Bits
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Unit = {
     Builder.error("connectFromBits: DontCare cannot be a connection sink (LHS)")
   }
 
-  def do_asUInt(implicit sourceInfo: chisel3.experimental.SourceInfo): UInt = {
+  def do_asUInt(using sourceInfo: chisel3.experimental.SourceInfo): UInt = {
     Builder.error("DontCare does not have a UInt representation")
     0.U
   }
@@ -1181,6 +1175,6 @@ final case object DontCare extends Element with connectable.ConnectableDocs {
     * @group connection
     * @param producer the right-hand-side of the connection; will always be driven by leaf connections, and never drive leaf connections ("flipped connection")
     */
-  final def :>=[T <: Data](producer: => T)(implicit sourceInfo: SourceInfo): Unit =
+  final def :>=[T <: Data](producer: => T)(using sourceInfo: SourceInfo): Unit =
     this.asInstanceOf[Data] :>= producer.asInstanceOf[Data]
 }

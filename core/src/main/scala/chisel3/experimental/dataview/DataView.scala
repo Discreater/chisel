@@ -70,7 +70,7 @@ sealed class DataView[T: DataProduct, V <: Data] private[chisel3] (
     * @tparam V2 View type of `DataView` `g`
     * @return a new `DataView` from the original `T` to new view-type `V2`
     */
-  def andThen[V2 <: Data](g: DataView[V, V2])(implicit sourceInfo: SourceInfo): DataView[T, V2] = {
+  def andThen[V2 <: Data](g: DataView[V, V2])(using sourceInfo: SourceInfo): DataView[T, V2] = {
     val self = this
     // We have to pass the DataProducts and DataViews manually to .viewAs below
     val tdp = implicitly[DataProduct[T]]
@@ -93,7 +93,7 @@ object DataView {
     mkView: T => V,
     pairs:  ((T, V) => (Data, Data))*
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): DataView[T, V] =
     DataView.pairs(mkView, pairs: _*)
 
@@ -102,7 +102,7 @@ object DataView {
     mkView: T => V,
     pairs:  ((T, V) => (Data, Data))*
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): DataView[T, V] =
     mapping(mkView: T => V, swizzle(pairs))
 
@@ -111,7 +111,7 @@ object DataView {
     mkView:  T => V,
     mapping: (T, V) => Iterable[(Data, Data)]
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): DataView[T, V] =
     new DataView[T, V](mkView, mapping, _total = true)
 
@@ -154,7 +154,7 @@ object DataView {
   // Sort of the "Standard library" implementations
 
   /** All Chisel Data are viewable as their own type */
-  implicit def identityView[A <: Data](implicit sourceInfo: SourceInfo): DataView[A, A] =
+  implicit def identityView[A <: Data](using sourceInfo: SourceInfo): DataView[A, A] =
     DataView[A, A](chiselTypeOf.apply, { case (x, y) => (x, y) })
 
   /** Provides `DataView[Seq[A], Vec[B]]` for all `A` such that there exists `DataView[A, B]` */
@@ -570,7 +570,7 @@ object PartialDataView {
     mkView: T => V,
     pairs:  ((T, V) => (Data, Data))*
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): DataView[T, V] =
     PartialDataView.pairs(mkView, pairs: _*)
 
@@ -579,7 +579,7 @@ object PartialDataView {
     mkView: T => V,
     pairs:  ((T, V) => (Data, Data))*
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): DataView[T, V] =
     mapping(mkView, DataView.swizzle(pairs))
 
@@ -588,7 +588,7 @@ object PartialDataView {
     mkView:  T => V,
     mapping: (T, V) => Iterable[(Data, Data)]
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): DataView[T, V] =
     new DataView[T, V](mkView, mapping, _total = false)
 

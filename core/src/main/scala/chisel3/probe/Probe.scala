@@ -15,7 +15,7 @@ import scala.language.experimental.macros
   */
 private[chisel3] sealed trait ProbeBase {
 
-  protected def apply[T <: Data](source: => T, writable: Boolean)(implicit sourceInfo: SourceInfo): T = {
+  protected def apply[T <: Data](source: => T, writable: Boolean)(using sourceInfo: SourceInfo): T = {
     val prevId = Builder.idGen.value
     // call Output() to coerce passivity
     val data = Output(source) // should only evaluate source once
@@ -37,18 +37,12 @@ object Probe extends ProbeBase with SourceInfoDoc {
 
   /** Mark a Chisel type as with a probe modifier.
     */
-  def apply[T <: Data](source: => T): T = macro chisel3.internal.sourceinfo.ProbeTransform.sourceApply[T]
-
-  /** @group SourceInfoTransformMacro */
-  def do_apply[T <: Data](source: => T)(implicit sourceInfo: SourceInfo): T = super.apply(source, false)
+  def apply[T <: Data](source: => T)(using sourceInfo: SourceInfo): T = super.apply(source, false)
 }
 
 object RWProbe extends ProbeBase with SourceInfoDoc {
 
   /** Mark a Chisel type with a writable probe modifier.
     */
-  def apply[T <: Data](source: => T): T = macro chisel3.internal.sourceinfo.ProbeTransform.sourceApply[T]
-
-  /** @group SourceInfoTransformMacro */
-  def do_apply[T <: Data](source: => T)(implicit sourceInfo: SourceInfo): T = super.apply(source, true)
+  def apply[T <: Data](source: => T)(using sourceInfo: SourceInfo): T = super.apply(source, true)
 }

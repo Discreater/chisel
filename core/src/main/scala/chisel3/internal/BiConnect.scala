@@ -305,7 +305,7 @@ private[chisel3] object BiConnect {
 
   // These functions (finally) issue the connection operation
   // Issue with right as sink, left as source
-  private def issueConnectL2R(left: Element, right: Element)(implicit sourceInfo: SourceInfo): Unit = {
+  private def issueConnectL2R(left: Element, right: Element)(using sourceInfo: SourceInfo): Unit = {
     // Source and sink are ambiguous in the case of a Bi/Bulk Connect (<>).
     // If either is a DontCareBinding, just issue a DefInvalid for the other,
     //  otherwise, issue a Connect.
@@ -316,7 +316,7 @@ private[chisel3] object BiConnect {
     }
   }
   // Issue with left as sink, right as source
-  private def issueConnectR2L(left: Element, right: Element)(implicit sourceInfo: SourceInfo): Unit = {
+  private def issueConnectR2L(left: Element, right: Element)(using sourceInfo: SourceInfo): Unit = {
     // Source and sink are ambiguous in the case of a Bi/Bulk Connect (<>).
     // If either is a DontCareBinding, just issue a DefInvalid for the other,
     //  otherwise, issue a Connect.
@@ -330,7 +330,7 @@ private[chisel3] object BiConnect {
   // This function checks if element-level connection operation allowed.
   // Then it either issues it or throws the appropriate exception.
   def elemConnect(
-    implicit sourceInfo: SourceInfo,
+    using sourceInfo: SourceInfo,
     _left:               Element,
     _right:              Element,
     context_mod:         RawModule

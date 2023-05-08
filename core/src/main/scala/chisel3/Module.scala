@@ -11,7 +11,6 @@ import chisel3.internal._
 import chisel3.internal.Builder._
 import chisel3.internal.firrtl._
 import chisel3.experimental.{BaseModule, SourceInfo, UnlocatableSourceInfo}
-import chisel3.internal.sourceinfo.{InstTransform}
 import _root_.firrtl.annotations.{IsModule, ModuleName, ModuleTarget}
 import _root_.firrtl.AnnotationSeq
 
@@ -24,10 +23,7 @@ object Module extends SourceInfoDoc {
     *
     * @return the input module `m` with Chisel metadata properly set
     */
-  def apply[T <: BaseModule](bc: => T): T = macro InstTransform.apply[T]
-
-  /** @group SourceInfoTransformMacro */
-  def do_apply[T <: BaseModule](bc: => T)(implicit sourceInfo: SourceInfo): T = {
+  def apply[T <: BaseModule](bc: => T)(using sourceInfo: SourceInfo): T = {
     if (Builder.readyForModuleConstr) {
       throwException(
         "Error: Called Module() twice without instantiating a Module." +
@@ -98,7 +94,7 @@ object Module extends SourceInfoDoc {
   private[chisel3] def do_pseudo_apply[T <: BaseModule](
     bc: => T
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): T = {
     val parent = Builder.currentModule
     val module: T = bc // bc is actually evaluated here
@@ -211,7 +207,7 @@ package internal {
     private[chisel3] def cloneIORecord(
       proto: BaseModule
     )(
-      implicit sourceInfo: SourceInfo
+      using sourceInfo: SourceInfo
     ): ClonePorts = {
       require(proto.isClosed, "Can't clone a module before module close")
       // Fake Module to serve as the _parent of the cloned ports
@@ -542,7 +538,7 @@ package experimental {
     /** Chisel2 code didn't require the IO(...) wrapper and would assign a Chisel type directly to
       * io, then do operations on it. This binds a Chisel type in-place (mutably) as an IO.
       */
-    protected def _bindIoInPlace(iodef: Data)(implicit sourceInfo: SourceInfo): Unit = {
+    protected def _bindIoInPlace(iodef: Data)(using sourceInfo: SourceInfo): Unit = {
 
       // Assign any signals (Chisel or chisel3) with Unspecified/Flipped directions to Output/Input
       Module.assignCompatDir(iodef)
@@ -555,12 +551,12 @@ package experimental {
     private[chisel3] def bindIoInPlace(
       iodef: Data
     )(
-      implicit sourceInfo: SourceInfo
+      using sourceInfo: SourceInfo
     ): Unit = _bindIoInPlace(iodef)
 
     // Must have separate createSecretIO from addSecretIO to get plugin to name it
     // data must be a fresh Chisel type
-    private[chisel3] def createSecretIO(data: => Data)(implicit sourceInfo: SourceInfo): Data = {
+    private[chisel3] def createSecretIO(data: => Data)(using sourceInfo: SourceInfo): Data = {
       val iodef = data
       internal.requireIsChiselType(iodef, "io type")
       require(!isFullyClosed, "Cannot create secret ports if module is fully closed")
@@ -572,7 +568,7 @@ package experimental {
     private[chisel3] val secretPorts: ArrayBuffer[Port] = ArrayBuffer.empty
 
     // Must have separate createSecretIO from addSecretIO to get plugin to name it
-    private[chisel3] def addSecretIO(iodef: Data)(implicit sourceInfo: SourceInfo): Data = {
+    private[chisel3] def addSecretIO(iodef: Data)(using sourceInfo: SourceInfo): Data = {
       val name = iodef._computeName(None).getOrElse("secret")
       iodef.setRef(ModuleIO(this, _namespace.name(name)))
       val newPort = new Port(iodef, iodef.specifiedDirection, sourceInfo)
@@ -598,7 +594,7 @@ package experimental {
       * TODO(twigg): Specifically walk the Data definition to call out which nodes
       * are problematic.
       */
-    protected def IO[T <: Data](iodef: => T)(implicit sourceInfo: SourceInfo): T = {
+    protected def IO[T <: Data](iodef: => T)(using sourceInfo: SourceInfo): T = {
       chisel3.IO.apply(iodef)
     }
 

@@ -228,7 +228,7 @@ private[chisel3] object MonoConnect {
     * @return whether the source and sink exist in an appropriate context to be connected
     */
   private[chisel3] def dataConnectContextCheck(
-    implicit sourceInfo: SourceInfo,
+    using sourceInfo: SourceInfo,
     sink:                Data,
     source:              Data,
     context_mod:         RawModule
@@ -372,7 +372,7 @@ private[chisel3] object MonoConnect {
   }
 
   // This function (finally) issues the connection operation
-  private def issueConnect(sink: Element, source: Element)(implicit sourceInfo: SourceInfo): Unit = {
+  private def issueConnect(sink: Element, source: Element)(using sourceInfo: SourceInfo): Unit = {
     // If the source is a DontCare, generate a DefInvalid for the sink,
     //  otherwise, issue a Connect.
     source.topBinding match {
@@ -384,7 +384,7 @@ private[chisel3] object MonoConnect {
   // This function checks if element-level connection operation allowed.
   // Then it either issues it or throws the appropriate exception.
   def elemConnect(
-    implicit sourceInfo: SourceInfo,
+    using sourceInfo: SourceInfo,
     _sink:               Element,
     _source:             Element,
     context_mod:         RawModule

@@ -10,7 +10,7 @@ import chisel3.experimental.SourceInfo
   * constant value.
   */
 object Const {
-  def apply[T <: Data](source: => T)(implicit sourceInfo: SourceInfo): T = {
+  def apply[T <: Data](source: => T)(using sourceInfo: SourceInfo): T = {
     val prevId = Builder.idGen.value
     val data = source // should only evaluate source once
     requireIsChiselType(data)

@@ -106,7 +106,7 @@ private[chisel3] object Connection {
     pRoot: Connectable[T],
     cOp:   Connection
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Unit = {
     doConnection(cRoot, pRoot, cOp)
   }
@@ -115,7 +115,7 @@ private[chisel3] object Connection {
     l: Data,
     r: Data
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Unit = {
     try {
       (l, r) match {
@@ -133,7 +133,7 @@ private[chisel3] object Connection {
     producer:     Connectable[T],
     connectionOp: Connection
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Unit = {
 
     var errors: List[String] = Nil
@@ -143,7 +143,7 @@ private[chisel3] object Connection {
       conAlign: Alignment,
       proAlign: Alignment
     )(
-      implicit sourceInfo: SourceInfo
+      using sourceInfo: SourceInfo
     ): Unit = {
       (conAlign, proAlign) match {
         // Base Case 0: should probably never happen
@@ -240,7 +240,7 @@ private[chisel3] object Connection {
     }
   }
 
-  private def checkAnalog(as: Analog*)(implicit sourceInfo: SourceInfo): Unit = {
+  private def checkAnalog(as: Analog*)(using sourceInfo: SourceInfo): Unit = {
     val currentModule = Builder.currentModule.get.asInstanceOf[RawModule]
     try {
       as.toList match {
@@ -256,7 +256,7 @@ private[chisel3] object Connection {
     }
   }
 
-  private def connectAnalog(a: Analog, b: Data)(implicit sourceInfo: SourceInfo): Unit = {
+  private def connectAnalog(a: Analog, b: Data)(using sourceInfo: SourceInfo): Unit = {
     b match {
       case (ba: Analog) => {
         checkAnalog(a, ba)

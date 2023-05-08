@@ -314,7 +314,7 @@ object Connectable {
       *   into Chisel IR lowering to FIRRTL IR. Such a change will likely conflict with the logic in
       *   BiConnect which uses AbsoluteDirection to "Do the right thing"TM.
       */
-    private def doFirrtlConnect[S <: Data](consumer: T, producer: S)(implicit sourceInfo: SourceInfo): Unit = {
+    private def doFirrtlConnect[S <: Data](consumer: T, producer: S)(using sourceInfo: SourceInfo): Unit = {
       val flip = consumer match {
         case rec: Record if rec._isOpaqueType =>
           rec.elementsIterator.next().specifiedDirection == SpecifiedDirection.Flip
@@ -379,7 +379,7 @@ object Connectable {
       * @group connection
       * @param producer the right-hand-side of the connection; will always drive leaf connections, and never get driven by leaf connections ("aligned connection")
       */
-    final def :<=(producer: DontCare.type)(implicit sourceInfo: SourceInfo): Unit = {
+    final def :<=(producer: DontCare.type)(using sourceInfo: SourceInfo): Unit = {
       connect(consumer, producer, ColonLessEq)
     }
 
@@ -388,7 +388,7 @@ object Connectable {
       * @group connection
       * @param producer the right-hand-side of the connection; will always be driven by leaf connections, and never drive leaf connections ("flipped connection")
       */
-    final def :>=(producer: DontCare.type)(implicit sourceInfo: SourceInfo): Unit = {
+    final def :>=(producer: DontCare.type)(using sourceInfo: SourceInfo): Unit = {
       connect(consumer, producer, ColonGreaterEq)
     }
 
@@ -397,7 +397,7 @@ object Connectable {
       * @group connection
       * @param producer the right-hand-side of the connection
       */
-    final def :<>=(producer: DontCare.type)(implicit sourceInfo: SourceInfo): Unit = {
+    final def :<>=(producer: DontCare.type)(using sourceInfo: SourceInfo): Unit = {
       connect(consumer, producer, ColonLessGreaterEq)
     }
 
@@ -406,7 +406,7 @@ object Connectable {
       * @group connection
       * @param producer the right-hand-side of the connection, all members will be driving, none will be driven-to
       */
-    final def :#=(producer: DontCare.type)(implicit sourceInfo: SourceInfo): Unit = {
+    final def :#=(producer: DontCare.type)(using sourceInfo: SourceInfo): Unit = {
       connect(consumer, producer, ColonHashEq)
     }
 

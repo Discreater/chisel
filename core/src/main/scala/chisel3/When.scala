@@ -32,7 +32,7 @@ object when {
     cond:  => Bool
   )(block: => Any
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): WhenContext = {
     new WhenContext(sourceInfo, Some(() => cond), block, 0, Nil)
   }
@@ -101,7 +101,7 @@ final class WhenContext private[chisel3] (
     elseCond: => Bool
   )(block:    => Any
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): WhenContext = {
     new WhenContext(sourceInfo, Some(() => elseCond), block, firrtlDepth + 1, cond ++: altConds)
   }
@@ -113,7 +113,7 @@ final class WhenContext private[chisel3] (
     * assignment of the Bool node of the predicate in the correct
     * place.
     */
-  def otherwise(block: => Any)(implicit sourceInfo: SourceInfo): Unit =
+  def otherwise(block: => Any)(using sourceInfo: SourceInfo): Unit =
     new WhenContext(sourceInfo, None, block, firrtlDepth + 1, cond ++: altConds)
 
   def active: Boolean = scopeOpen

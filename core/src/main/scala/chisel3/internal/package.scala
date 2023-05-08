@@ -107,7 +107,7 @@ package object internal {
     probe:        Data,
     errorMessage: String = ""
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Unit = {
     val msg = if (errorMessage.isEmpty) s"Expected a probe." else errorMessage
     if (!hasProbeTypeModifier(probe)) Builder.error(msg)
@@ -117,7 +117,7 @@ package object internal {
     probe:        Data,
     errorMessage: String = ""
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Unit = {
     val msg = if (errorMessage.isEmpty) s"Did not expect a probe." else errorMessage
     if (hasProbeTypeModifier(probe)) Builder.error(msg)
@@ -127,7 +127,7 @@ package object internal {
     probe:        Data,
     errorMessage: String = ""
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Unit = {
     val msg = if (errorMessage.isEmpty) s"Expected a writable probe." else errorMessage
     requireHasProbeTypeModifier(probe, msg)

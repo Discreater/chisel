@@ -99,18 +99,10 @@ object Instance extends SourceInfoDoc {
     * @param definition the Module being created
     * @return an instance of the module definition
     */
-  def apply[T <: BaseModule with IsInstantiable](definition: Definition[T]): Instance[T] =
-    macro InstanceTransform.apply[T]
-
-  /** A constructs an [[Instance]] from a [[Definition]]
-    *
-    * @param definition the Module being created
-    * @return an instance of the module definition
-    */
-  def do_apply[T <: BaseModule with IsInstantiable](
+  def apply[T <: BaseModule with IsInstantiable](
     definition: Definition[T]
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Instance[T] = {
     // Check to see if the module is already defined internally or externally
     val existingMod = Builder.components.map {

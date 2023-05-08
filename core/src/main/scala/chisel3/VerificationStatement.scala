@@ -48,7 +48,7 @@ object assert extends VerifPrintMacrosDoc {
     message: String,
     data:    Bits*
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Assert = ${ _applyMacroWithInterpolatorCheck('cond, 'message, 'data)( 'sourceInfo) }
 
   /** Checks for a condition to be valid in the circuit at all times. If the
@@ -73,10 +73,10 @@ object assert extends VerifPrintMacrosDoc {
     cond:    Bool,
     message: Printable
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Assert = ${ _applyMacroWithPrintableMessage('cond, 'message)('sourceInfo) }
 
-  inline def apply(cond: Bool)(implicit sourceInfo: SourceInfo): Assert =
+  inline def apply(cond: Bool)(using sourceInfo: SourceInfo): Assert =
     ${ _applyMacroWithNoMessage('cond)( 'sourceInfo) }
 
   import VerificationStatement._
@@ -150,7 +150,7 @@ object assert extends VerifPrintMacrosDoc {
     message: Option[String],
     data:    Bits*
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Assert = {
     val id = new Assert()
     when(!Module.reset.asBool) {
@@ -166,7 +166,7 @@ object assert extends VerifPrintMacrosDoc {
     line:    SourceLineInfo,
     message: Option[Printable]
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Assert = {
     val id = new Assert()
     message.foreach(Printable.checkScope(_))
@@ -204,7 +204,7 @@ object assume extends VerifPrintMacrosDoc {
     message: String,
     data:    Bits*
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Assume = ${ _applyMacroWithInterpolatorCheck('cond, 'message, 'data, 'sourceInfo) }
 
   /** Assumes a condition to be valid in the circuit at all times.
@@ -228,10 +228,10 @@ object assume extends VerifPrintMacrosDoc {
     cond:    Bool,
     message: Printable
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Assume = ${_applyMacroWithPrintableMessage('cond, 'message)('sourceInfo)}
 
-  inline def apply(cond: Bool)(implicit sourceInfo: SourceInfo): Assume =
+  inline def apply(cond: Bool)(using sourceInfo: SourceInfo): Assume =
     ${ _applyMacroWithNoMessage('cond)('sourceInfo) }
 
   /** An elaboration-time assumption. Calls the built-in Scala assume function. */
@@ -305,7 +305,7 @@ object assume extends VerifPrintMacrosDoc {
     message: Option[String],
     data:    Bits*
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Assume = {
     val id = new Assume()
     when(!Module.reset.asBool) {
@@ -321,7 +321,7 @@ object assume extends VerifPrintMacrosDoc {
     line:    SourceLineInfo,
     message: Option[Printable]
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Assume = {
     val id = new Assume()
     message.foreach(Printable.checkScope(_))
@@ -351,9 +351,9 @@ object cover extends VerifPrintMacrosDoc {
     * @param message a string describing the cover event
     */
   // Macros currently can't take default arguments, so we need two functions to emulate defaults.
-  inline def apply(cond: Bool, message: String)(implicit sourceInfo: SourceInfo): Cover =
+  inline def apply(cond: Bool, message: String)(using sourceInfo: SourceInfo): Cover =
     ${ _applyMacroWithMessage('cond, 'message)('sourceInfo) }
-  inline def apply(cond: Bool)(implicit sourceInfo: SourceInfo): Cover =
+  inline def apply(cond: Bool)(using sourceInfo: SourceInfo): Cover =
     ${ _applyMacroWithNoMessage('cond)('sourceInfo)}
 
   /** Named class for cover statements. */
@@ -390,7 +390,7 @@ object cover extends VerifPrintMacrosDoc {
     line:    SourceLineInfo,
     message: Option[String]
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Cover = {
     val id = new Cover()
     when(!Module.reset.asBool) {
@@ -406,7 +406,7 @@ object stop {
     *
     * @param message a string describing why the simulation was stopped
     */
-  def apply(message: String = "")(implicit sourceInfo: SourceInfo): Stop = {
+  def apply(message: String = "")(using sourceInfo: SourceInfo): Stop = {
     val stp = new Stop()
     when(!Module.reset.asBool) {
       pushCommand(Stop(stp, sourceInfo, Builder.forcedClock.ref, 0))
@@ -439,7 +439,7 @@ private object VerificationStatement {
     cond:     Bool,
     message:  Option[Printable]
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Unit = {
     val (filename, line, content) = lineInfo
     val lineMsg = s"$filename:$line $content".replaceAll("%", "%%")

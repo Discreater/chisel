@@ -65,13 +65,13 @@ final class Analog private (private[chisel3] val width: Width) extends Element {
     binding = target
   }
 
-  override def do_asUInt(implicit sourceInfo: SourceInfo): UInt =
+  override def do_asUInt(using sourceInfo: SourceInfo): UInt =
     throwException("Analog does not support asUInt")
 
   private[chisel3] override def connectFromBits(
     that: Bits
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Unit = {
     throwException("Analog does not support connectFromBits")
   }

@@ -14,7 +14,6 @@ import chisel3.experimental.{SourceInfo, UnlocatableSourceInfo}
 import chisel3.internal._
 import chisel3.internal.Builder.pushCommand
 import chisel3.internal.firrtl._
-import chisel3.internal.sourceinfo.{SourceInfoTransform, VecTransform}
 
 import java.lang.Math.{floor, log10, pow}
 import scala.collection.mutable
@@ -35,7 +34,7 @@ sealed abstract class Aggregate extends Data {
           val masked = ((BigInt(1) << width) - 1) & eltLit // also handles the negative case with two's complement
           Some((accumulator << width) + masked)
         case (Some(accumulator), None) if checkForDontCares =>
-          Builder.error(s"Called litValue on aggregate $this contains DontCare")(UnlocatableSourceInfo)
+          Builder.error(s"Called litValue on aggregate $this contains DontCare")(using UnlocatableSourceInfo)
           None
         case (None, _) => None
         case (_, None) => None
@@ -73,7 +72,7 @@ sealed abstract class Aggregate extends Data {
   private[chisel3] def width: Width = elementsIterator.map(_.width).foldLeft(0.W)(_ + _)
 
   // Emits the FIRRTL `this <= that`, or `this is invalid` if that == DontCare
-  private[chisel3] def firrtlConnect(that: Data)(implicit sourceInfo: SourceInfo): Unit = {
+  private[chisel3] def firrtlConnect(that: Data)(using sourceInfo: SourceInfo): Unit = {
     // If the source is a DontCare, generate a DefInvalid for the sink, otherwise, issue a Connect.
     if (that == DontCare) {
       pushCommand(DefInvalid(sourceInfo, lref))
@@ -82,14 +81,14 @@ sealed abstract class Aggregate extends Data {
     }
   }
 
-  override def do_asUInt(implicit sourceInfo: SourceInfo): UInt = {
-    SeqUtils.do_asUInt(flatten.map(_.asUInt))
+  override def do_asUInt(using sourceInfo: SourceInfo): UInt = {
+    SeqUtils.asUInt(flatten.map(_.asUInt))
   }
 
   private[chisel3] override def connectFromBits(
     that: Bits
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Unit = {
     var i = 0
     val bits = if (that.isLit) that else WireDefault(UInt(this.width), that) // handles width padding
@@ -114,7 +113,7 @@ trait VecFactory extends SourceInfoDoc {
     *
     * @note elements are NOT assigned by default and have no value
     */
-  def apply[T <: Data](n: Int, gen: T)(implicit sourceInfo: SourceInfo): Vec[T] = {
+  def apply[T <: Data](n: Int, gen: T)(using sourceInfo: SourceInfo): Vec[T] = {
     requireIsChiselType(gen, "vec type")
     new Vec(gen.cloneTypeFull, n)
   }
@@ -124,7 +123,7 @@ trait VecFactory extends SourceInfoDoc {
     idx: UInt,
     n:   BigInt
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): UInt = {
     val w = (n - 1).bitLength
     if (n <= 1) 0.U
@@ -232,7 +231,7 @@ sealed class Vec[T <: Data] private[chisel3] (gen: => T, val length: Int) extend
     * @param that the Seq to connect from
     * @group connection
     */
-  def <>(that: Seq[T])(implicit sourceInfo: SourceInfo): Unit = {
+  def <>(that: Seq[T])(using sourceInfo: SourceInfo): Unit = {
     if (this.length != that.length)
       Builder.error(
         s"Vec (size ${this.length}) and Seq (size ${that.length}) being bulk connected have different lengths!"
@@ -255,7 +254,7 @@ sealed class Vec[T <: Data] private[chisel3] (gen: => T, val length: Int) extend
     * @param that the Vec to connect from
     * @group connection
     */
-  def <>(that: Vec[T])(implicit sourceInfo: SourceInfo): Unit =
+  def <>(that: Vec[T])(using sourceInfo: SourceInfo): Unit =
     this.bulkConnect(that.asInstanceOf[Data])
 
   /** "The strong connect operator", assigning elements in this Vec from elements in a Seq.
@@ -269,7 +268,7 @@ sealed class Vec[T <: Data] private[chisel3] (gen: => T, val length: Int) extend
     * @note the length of this Vec must match the length of the input Seq
     * @group connection
     */
-  def :=(that: Seq[T])(implicit sourceInfo: SourceInfo): Unit = {
+  def :=(that: Seq[T])(using sourceInfo: SourceInfo): Unit = {
     require(
       this.length == that.length,
       s"Cannot assign to a Vec of length ${this.length} from a Seq of different length ${that.length}"
@@ -290,7 +289,7 @@ sealed class Vec[T <: Data] private[chisel3] (gen: => T, val length: Int) extend
     * @note the length of this Vec must match the length of the input Vec
     * @group connection
     */
-  def :=(that: Vec[T])(implicit sourceInfo: SourceInfo): Unit = this.connect(that)
+  def :=(that: Vec[T])(using sourceInfo: SourceInfo): Unit = this.connect(that)
 
   /** Creates a dynamically indexed read or write accessor into the array.
     */
@@ -329,7 +328,7 @@ sealed class Vec[T <: Data] private[chisel3] (gen: => T, val length: Int) extend
     // Perhaps there's a cleaner way of accomplishing this...
     port.bind(ChildBinding(this), reconstructedResolvedDirection)
 
-    val i = Vec.truncateIndex(p, length)(UnlocatableSourceInfo)
+    val i = Vec.truncateIndex(p, length)(using UnlocatableSourceInfo)
     port.setRef(this, i)
 
     port
@@ -359,14 +358,11 @@ sealed class Vec[T <: Data] private[chisel3] (gen: => T, val length: Int) extend
   }
 
   /** A reduce operation in a tree like structure instead of sequentially
+    *
     * @example An adder tree
     * {{{
     * val sumOut = inputNums.reduceTree((a: T, b: T) => (a + b))
     * }}}
-    */
-  def reduceTree(redOp: (T, T) => T): T = macro VecTransform.reduceTreeDefault
-
-  /** A reduce operation in a tree like structure instead of sequentially
     * @example A pipelined adder tree
     * {{{
     * val sumOut = inputNums.reduceTree(
@@ -375,13 +371,11 @@ sealed class Vec[T <: Data] private[chisel3] (gen: => T, val length: Int) extend
     * )
     * }}}
     */
-  def reduceTree(redOp: (T, T) => T, layerOp: (T) => T): T = macro VecTransform.reduceTree
-
-  def do_reduceTree(
+  def reduceTree(
     redOp:   (T, T) => T,
     layerOp: (T) => T = (x: T) => x
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): T = {
     require(!isEmpty, "Cannot apply reduction on a vec of size 0")
 
@@ -427,7 +421,7 @@ sealed class Vec[T <: Data] private[chisel3] (gen: => T, val length: Int) extend
   private[chisel3] def _makeLit(
     elementInitializers: (Int, T)*
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): this.type = {
 
     def checkLiteralConstruction(): Unit = {
@@ -587,7 +581,7 @@ object VecInit extends SourceInfoDoc {
   private def getConnectOpFromDirectionality[T <: Data](
     proto: T
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): (T, T) => Unit = proto.direction match {
     case ActualDirection.Input | ActualDirection.Output | ActualDirection.Unspecified =>
       // When internal wires are involved, driver / sink must be specified explicitly, otherwise
@@ -611,10 +605,7 @@ object VecInit extends SourceInfoDoc {
     * element
     * @note output elements are connected from the input elements
     */
-  def apply[T <: Data](elts: Seq[T]): Vec[T] = macro VecTransform.apply_elts
-
-  /** @group SourceInfoTransformMacro */
-  def do_apply[T <: Data](elts: Seq[T])(implicit sourceInfo: SourceInfo): Vec[T] = {
+  def apply[T <: Data](elts: Seq[T])(using sourceInfo: SourceInfo): Vec[T] = {
     // REVIEW TODO: this should be removed in favor of the apply(elts: T*)
     // varargs constructor, which is more in line with the style of the Scala
     // collection API. However, a deprecation phase isn't possible, since
@@ -643,10 +634,7 @@ object VecInit extends SourceInfoDoc {
     * element
     * @note output elements are connected from the input elements
     */
-  def apply[T <: Data](elt0: T, elts: T*): Vec[T] = macro VecTransform.apply_elt0
-
-  /** @group SourceInfoTransformMacro */
-  def do_apply[T <: Data](elt0: T, elts: T*)(implicit sourceInfo: SourceInfo): Vec[T] =
+  def apply[T <: Data](elt0: T, elts: T*)(using sourceInfo: SourceInfo): Vec[T] =
     apply(elt0 +: elts.toSeq)
 
   /** Creates a new [[Vec]] of length `n` composed of the results of the given
@@ -657,14 +645,11 @@ object VecInit extends SourceInfoDoc {
     * @param gen function that takes in an Int (the index) and returns a
     * [[Data]] that becomes the output element
     */
-  def tabulate[T <: Data](n: Int)(gen: (Int) => T): Vec[T] = macro VecTransform.tabulate
-
-  /** @group SourceInfoTransformMacro */
-  def do_tabulate[T <: Data](
+  def tabulate[T <: Data](
     n:   Int
   )(gen: (Int) => T
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Vec[T] =
     apply((0 until n).map(i => gen(i)))
 
@@ -677,15 +662,12 @@ object VecInit extends SourceInfoDoc {
     * @param gen function that takes in an Int (the index) and returns a
     * [[Data]] that becomes the output element
     */
-  def tabulate[T <: Data](n: Int, m: Int)(gen: (Int, Int) => T): Vec[Vec[T]] = macro VecTransform.tabulate2D
-
-  /** @group SourceInfoTransformMacro */
-  def do_tabulate[T <: Data](
+  def tabulate[T <: Data](
     n:   Int,
     m:   Int
   )(gen: (Int, Int) => T
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Vec[Vec[T]] = {
     // TODO make this lazy (requires LazyList and cross compilation, beyond the scope of this PR)
     val elts = Seq.tabulate(n, m)(gen)
@@ -715,17 +697,13 @@ object VecInit extends SourceInfoDoc {
     * @param gen function that takes in an Int (the index) and returns a
     * [[Data]] that becomes the output element
     */
-  def tabulate[T <: Data](n: Int, m: Int, p: Int)(gen: (Int, Int, Int) => T): Vec[Vec[Vec[T]]] =
-    macro VecTransform.tabulate3D
-
-  /** @group SourceInfoTransformMacro */
-  def do_tabulate[T <: Data](
+  def tabulate[T <: Data](
     n:   Int,
     m:   Int,
     p:   Int
   )(gen: (Int, Int, Int) => T
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Vec[Vec[Vec[T]]] = {
     // TODO make this lazy (requires LazyList and cross compilation, beyond the scope of this PR)
     val elts = Seq.tabulate(n, m, p)(gen)
@@ -756,10 +734,7 @@ object VecInit extends SourceInfoDoc {
     * @param gen function that takes in an element T and returns an output
     * element of the same type
     */
-  def fill[T <: Data](n: Int)(gen: => T): Vec[T] = macro VecTransform.fill
-
-  /** @group SourceInfoTransformMacro */
-  def do_fill[T <: Data](n: Int)(gen: => T)(implicit sourceInfo: SourceInfo): Vec[T] =
+  def fill[T <: Data](n: Int)(gen: => T)(using sourceInfo: SourceInfo): Vec[T] =
     if (n == 0) { Wire(Vec(0, gen.cloneTypeFull)) }
     else { apply(Seq.fill(n)(gen)) }
 
@@ -771,15 +746,12 @@ object VecInit extends SourceInfoDoc {
     * @param gen function that takes in an element T and returns an output
     * element of the same type
     */
-  def fill[T <: Data](n: Int, m: Int)(gen: => T): Vec[Vec[T]] = macro VecTransform.fill2D
-
-  /** @group SourceInfoTransformMacro */
-  def do_fill[T <: Data](
+  def fill[T <: Data](
     n:   Int,
     m:   Int
   )(gen: => T
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Vec[Vec[T]] = {
     do_tabulate(n, m)((_, _) => gen)
   }
@@ -793,16 +765,13 @@ object VecInit extends SourceInfoDoc {
     * @param gen function that takes in an element T and returns an output
     * element of the same type
     */
-  def fill[T <: Data](n: Int, m: Int, p: Int)(gen: => T): Vec[Vec[Vec[T]]] = macro VecTransform.fill3D
-
-  /** @group SourceInfoTransformMacro */
-  def do_fill[T <: Data](
+  def fill[T <: Data](
     n:   Int,
     m:   Int,
     p:   Int
   )(gen: => T
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Vec[Vec[Vec[T]]] = {
     do_tabulate(n, m, p)((_, _, _) => gen)
   }
@@ -815,15 +784,12 @@ object VecInit extends SourceInfoDoc {
     * @param f Function that applies the element T from previous index and returns the output
     * element to the next index
     */
-  def iterate[T <: Data](start: T, len: Int)(f: (T) => T): Vec[T] = macro VecTransform.iterate
-
-  /** @group SourceInfoTransformMacro */
-  def do_iterate[T <: Data](
+  def iterate[T <: Data](
     start: T,
     len:   Int
   )(f:     (T) => T
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Vec[T] =
     apply(Seq.iterate(start, len)(f))
 }
@@ -840,35 +806,23 @@ trait VecLike[T <: Data] extends IndexedSeq[T] with HasId with SourceInfoDoc {
 
   /** Outputs true if p outputs true for every element.
     */
-  def forall(p: T => Bool): Bool = macro SourceInfoTransform.pArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_forall(p: T => Bool)(implicit sourceInfo: SourceInfo): Bool =
+  def forall(p: T => Bool)(using sourceInfo: SourceInfo): Bool =
     (this.map(p)).fold(true.B)(_ && _)
 
   /** Outputs true if p outputs true for at least one element.
     */
-  def exists(p: T => Bool): Bool = macro SourceInfoTransform.pArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_exists(p: T => Bool)(implicit sourceInfo: SourceInfo): Bool =
+  def exists(p: T => Bool)(using sourceInfo: SourceInfo): Bool =
     (this.map(p)).fold(false.B)(_ || _)
 
   /** Outputs true if the vector contains at least one element equal to x (using
     * the === operator).
     */
-  def contains(x: T)(implicit ev: T <:< UInt): Bool = macro VecTransform.contains
-
-  /** @group SourceInfoTransformMacro */
-  def do_contains(x: T)(implicit sourceInfo: SourceInfo, ev: T <:< UInt): Bool =
+  def contains(x: T)(using sourceInfo: SourceInfo, ev: T <:< UInt): Bool =
     this.exists(_ === x)
 
   /** Outputs the number of elements for which p is true.
     */
-  def count(p: T => Bool): UInt = macro SourceInfoTransform.pArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_count(p: T => Bool)(implicit sourceInfo: SourceInfo): UInt =
+  def count(p: T => Bool)(using sourceInfo: SourceInfo): UInt =
     SeqUtils.count(this.map(p))
 
   /** Helper function that appends an index (literal value) to each element,
@@ -878,18 +832,12 @@ trait VecLike[T <: Data] extends IndexedSeq[T] with HasId with SourceInfoDoc {
 
   /** Outputs the index of the first element for which p outputs true.
     */
-  def indexWhere(p: T => Bool): UInt = macro SourceInfoTransform.pArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_indexWhere(p: T => Bool)(implicit sourceInfo: SourceInfo): UInt =
+  def indexWhere(p: T => Bool)(using sourceInfo: SourceInfo): UInt =
     SeqUtils.priorityMux(indexWhereHelper(p))
 
   /** Outputs the index of the last element for which p outputs true.
     */
-  def lastIndexWhere(p: T => Bool): UInt = macro SourceInfoTransform.pArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_lastIndexWhere(p: T => Bool)(implicit sourceInfo: SourceInfo): UInt =
+  def lastIndexWhere(p: T => Bool)(using sourceInfo: SourceInfo): UInt =
     SeqUtils.priorityMux(indexWhereHelper(p).reverse)
 
   /** Outputs the index of the element for which p outputs true, assuming that
@@ -902,10 +850,7 @@ trait VecLike[T <: Data] extends IndexedSeq[T] with HasId with SourceInfoDoc {
     * true is NOT checked (useful in cases where the condition doesn't always
     * hold, but the results are not used in those cases)
     */
-  def onlyIndexWhere(p: T => Bool): UInt = macro SourceInfoTransform.pArg
-
-  /** @group SourceInfoTransformMacro */
-  def do_onlyIndexWhere(p: T => Bool)(implicit sourceInfo: SourceInfo): UInt =
+  def onlyIndexWhere(p: T => Bool)(using sourceInfo: SourceInfo): UInt =
     SeqUtils.oneHotMux(indexWhereHelper(p))
 }
 

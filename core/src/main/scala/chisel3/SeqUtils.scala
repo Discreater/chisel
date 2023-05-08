@@ -19,10 +19,7 @@ private[chisel3] object SeqUtils {
     * Equivalent to r(n-1) ## ... ## r(1) ## r(0).
     * @note This returns a `0.U` if applied to a zero-element `Vec`.
     */
-  def asUInt[T <: Bits](in: Seq[T]): UInt = macro SourceInfoTransform.inArg
-
-  /** @group SourceInfoTransformMacros */
-  def do_asUInt[T <: Bits](in: Seq[T])(implicit sourceInfo: SourceInfo): UInt = {
+  def asUInt[T <: Bits](in: Seq[T])(using sourceInfo: SourceInfo): UInt = {
     if (in.isEmpty) {
       0.U
     } else if (in.tail.isEmpty) {
@@ -40,10 +37,7 @@ private[chisel3] object SeqUtils {
 
   /** Outputs the number of elements that === true.B.
     */
-  def count(in: Seq[Bool]): UInt = macro SourceInfoTransform.inArg
-
-  /** @group SourceInfoTransformMacros */
-  def do_count(in: Seq[Bool])(implicit sourceInfo: SourceInfo): UInt = in.size match {
+  def count(in: Seq[Bool])(using sourceInfo: SourceInfo): UInt = in.size match {
     case 0 => 0.U
     case 1 => in.head
     case n =>
@@ -53,13 +47,10 @@ private[chisel3] object SeqUtils {
 
   /** Returns the data value corresponding to the first true predicate.
     */
-  def priorityMux[T <: Data](in: Seq[(Bool, T)]): T = macro SourceInfoTransform.inArg
-
-  /** @group SourceInfoTransformMacros */
-  def do_priorityMux[T <: Data](
+  def priorityMux[T <: Data](
     in: Seq[(Bool, T)]
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): T = {
     if (in.size == 1) {
       in.head._2
@@ -76,13 +67,10 @@ private[chisel3] object SeqUtils {
     *
     * @note assumes exactly one true predicate, results undefined otherwise
     */
-  def oneHotMux[T <: Data](in: Iterable[(Bool, T)]): T = macro SourceInfoTransform.inArg
-
-  /** @group SourceInfoTransformMacros */
-  def do_oneHotMux[T <: Data](
+  def oneHotMux[T <: Data](
     in: Iterable[(Bool, T)]
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): T = {
     if (in.tail.isEmpty) {
       in.head._2

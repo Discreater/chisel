@@ -128,7 +128,7 @@ object printf {
     * @param fmt printf format string
     * @param data format string varargs containing data to print
     */
-  inline def apply(fmt: String, data: Bits*)(implicit sourceInfo: SourceInfo): Printf = ${ _applyMacroWithInterpolatorCheck('fmt, 'data, 'sourceInfo) }
+  inline def apply(fmt: String, data: Bits*)(using sourceInfo: SourceInfo): Printf = ${ _applyMacroWithInterpolatorCheck('fmt, 'data, 'sourceInfo) }
 
   def _applyMacroWithInterpolatorCheck(fmt: Expr[String], data: Expr[Seq[Bits]], sourceInfo: Expr[SourceInfo])(using q: Quotes): Expr[Printf] = {
     import q.reflect.*
@@ -162,13 +162,13 @@ object printf {
     * @see [[Printable]] documentation
     * @param pable [[Printable]] to print
     */
-  def apply(pable: Printable)(implicit sourceInfo: SourceInfo): Printf =
+  def apply(pable: Printable)(using sourceInfo: SourceInfo): Printf =
     printfWithReset(pable)(sourceInfo)
 
   private[chisel3] def printfWithReset(
     pable: Printable
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Printf = {
     var printfId: Printf = null
     when(!Module.reset.asBool) {
@@ -180,7 +180,7 @@ object printf {
   private[chisel3] def printfWithoutReset(
     pable: Printable
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Printf = {
     val clock = Builder.forcedClock
     val printfId = new Printf(pable)
@@ -194,7 +194,7 @@ object printf {
     fmt:  String,
     data: Bits*
   )(
-    implicit sourceInfo: SourceInfo
+    using sourceInfo: SourceInfo
   ): Printf =
     printfWithoutReset(Printable.pack(fmt, data: _*))
 }
