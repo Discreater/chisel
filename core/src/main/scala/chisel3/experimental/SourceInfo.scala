@@ -16,7 +16,7 @@ package chisel3.experimental
 
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox.Context
-import chisel3.internal.sourceinfo.SourceInfoMacro
+import chisel3.experimental.sourceinfo.SourceInfoMacro
 
 /** Abstract base class for generalized source information.
   */
@@ -49,5 +49,5 @@ case class SourceLine(filename: String, line: Int, col: Int) extends SourceInfo 
 }
 
 object SourceInfo {
-  implicit def materialize: SourceInfo = macro SourceInfoMacro.generate_source_info
+  implicit inline def materialize: SourceInfo = ${ SourceInfoMacro.generate_source_info }
 }

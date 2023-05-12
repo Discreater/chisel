@@ -164,7 +164,7 @@ object DataView {
   ): DataView[Seq[A], Vec[B]] = {
     // TODO this would need a better way to determine the prototype for the Vec
     DataView.mapping[Seq[A], Vec[B]](
-      xs => Vec(xs.size, chiselTypeClone(xs.head.viewAs[B]))(sourceInfo), // xs.head is not correct in general
+      xs => Vec(xs.size, chiselTypeClone(xs.head.viewAs[B]))(using sourceInfo), // xs.head is not correct in general
       { case (s, v) => s.zip(v).map { case (a, b) => a.viewAs[B] -> b } }
     )
   }
@@ -600,7 +600,7 @@ object PartialDataView {
   def supertype[T <: Bundle, V <: Bundle](
     mkView: T => V
   )(
-    implicit ev: ChiselSubtypeOf[T, V],
+    using ev: ChiselSubtypeOf[T, V],
     sourceInfo:  SourceInfo
   ): DataView[T, V] =
     mapping[T, V](

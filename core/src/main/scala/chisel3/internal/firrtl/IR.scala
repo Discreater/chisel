@@ -424,14 +424,6 @@ case class Circuit(
     annotations.flatMap(_.toFirrtl.update(renames)) ++ newAnnotations.flatMap(
       _.toFirrtl.flatMap(_.update(renames))
     )
-
-  def copy(
-    name:        String = name,
-    components:  Seq[Component] = components,
-    annotations: Seq[ChiselAnnotation] = annotations,
-    renames:     RenameMap = renames
-  ): Circuit = Circuit(name, components, annotations, renames, newAnnotations)
-
 }
 
 @deprecated(deprecatedPublicAPIMsg, "Chisel 3.6")

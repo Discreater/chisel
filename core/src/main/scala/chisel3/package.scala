@@ -34,7 +34,7 @@ import scala.language.implicitConversions
   * interpreting calls that have a non-Width parameter as a chained apply, otherwise things like
   * `0.asUInt(16)` (instead of `16.W`) compile without error and produce undesired results.
   */
-implicit class fromBigIntToLiteral(bigint: BigInt) {
+extension (bigint: BigInt) {
 
   /** Int to Bool conversion, allowing compact syntax like 1.B and 0.B
     */
@@ -42,7 +42,7 @@ implicit class fromBigIntToLiteral(bigint: BigInt) {
     case bigint if bigint == 0 => Bool.Lit(false)
     case bigint if bigint == 1 => Bool.Lit(true)
     case bigint =>
-      Builder.error(s"Cannot convert $bigint to Bool, must be 0 or 1")(UnlocatableSourceInfo)
+      Builder.error(s"Cannot convert $bigint to Bool, must be 0 or 1")(using UnlocatableSourceInfo)
       Bool.Lit(false)
   }
 
@@ -77,10 +77,31 @@ implicit class fromBigIntToLiteral(bigint: BigInt) {
   def asSInt(width: Width): SInt = SInt.Lit(bigint, width)
 }
 
-implicit class fromIntToLiteral(int: Int) extends fromBigIntToLiteral(int)
-implicit class fromLongToLiteral(long: Long) extends fromBigIntToLiteral(long)
+extension (int: Int) {
+  def B: Bool = BigInt(int).B
+  def U: UInt = BigInt(int).U
+  def S: SInt = BigInt(int).S
+  def U(width: Width): UInt = BigInt(int).U(width)
+  def S(width: Width): SInt = BigInt(int).S(width)
+  def asUInt: UInt = BigInt(int).asUInt
+  def asSInt: SInt = BigInt(int).asSInt
+  def asUInt(width: Width): UInt = BigInt(int).asUInt(width)
+  def asSInt(width: Width): SInt = BigInt(int).asSInt(width)
+}
 
-implicit class fromStringToLiteral(str: String) {
+extension (long: Long) {
+  def B: Bool = BigInt(long).B
+  def U: UInt = BigInt(long).U
+  def S: SInt = BigInt(long).S
+  def U(width: Width): UInt = BigInt(long).U(width)
+  def S(width: Width): SInt = BigInt(long).S(width)
+  def asUInt: UInt = BigInt(long).asUInt
+  def asSInt: SInt = BigInt(long).asSInt
+  def asUInt(width: Width): UInt = BigInt(long).asUInt(width)
+  def asSInt(width: Width): SInt = BigInt(long).asSInt(width)
+}
+
+extension (str: String) {
 
   /** String to UInt parse, recommended style for constants.
     */
@@ -108,13 +129,13 @@ implicit class fromStringToLiteral(str: String) {
       case "d"       => 10
       case "o"       => 8
       case "b"       => 2
-      case _         => Builder.error(s"Invalid base $base")(UnlocatableSourceInfo); 2
+      case _         => Builder.error(s"Invalid base $base")(using UnlocatableSourceInfo); 2
     }
     BigInt(num.filterNot(_ == '_'), radix)
   }
 }
 
-implicit class fromBooleanToLiteral(boolean: Boolean) {
+extension (boolean: Boolean) {
 
   /** Boolean to Bool conversion, recommended style for constants.
     */
@@ -125,11 +146,10 @@ implicit class fromBooleanToLiteral(boolean: Boolean) {
   def asBool: Bool = Bool.Lit(boolean)
 }
 
-implicit class fromIntToWidth(int: Int) {
+extension (int: Int) {
   def W: Width = Width(int)
 }
 
-object Vec extends VecFactory
 
 // Some possible regex replacements for the literal specifier deprecation:
 // (note: these are not guaranteed to handle all edge cases! check all replacements!)
@@ -149,9 +169,6 @@ object Vec extends VecFactory
 //  => $2.as$1($3.W)
 
 object Bits extends UIntFactory
-object UInt extends UIntFactory
-object SInt extends SIntFactory
-object Bool extends BoolFactory
 
 /** Public API to access Node/Signal names.
   * currently, the node's name, the full path name, and references to its parent Module and component.

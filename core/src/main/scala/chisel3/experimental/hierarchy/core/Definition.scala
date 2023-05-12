@@ -52,7 +52,7 @@ final case class Definition[+A] private[chisel3] (private[chisel3] val underlyin
   private[chisel3] def getInnerDataContext: Option[BaseModule] = proto match {
     case value: BaseModule =>
       val newChild = Module.do_pseudo_apply(new experimental.hierarchy.DefinitionClone(value))(
-        chisel3.experimental.UnlocatableSourceInfo
+        using chisel3.experimental.UnlocatableSourceInfo
       )
       newChild._circuit = value._circuit.orElse(Some(value))
       newChild._parent = None

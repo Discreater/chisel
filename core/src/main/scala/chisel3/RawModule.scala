@@ -47,7 +47,7 @@ abstract class RawModule extends BaseModule {
         Builder.error(
           s"Unable to name port $port in $this, " +
             s"try making it a public field of the Module ${source.makeMessage(x => x)}"
-        )(UnlocatableSourceInfo)
+        )(using UnlocatableSourceInfo)
       }
     }
   }

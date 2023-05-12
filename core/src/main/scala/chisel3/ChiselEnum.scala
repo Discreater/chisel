@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 package chisel3
-import scala.compiletime.summonInline
 
 import scala.language.experimental.macros
 import scala.language.existentials
-import scala.reflect.macros.blackbox.Context
 import scala.collection.mutable
 import chisel3.experimental.{annotate, requireIsHardware, ChiselAnnotation, SourceInfo, UnlocatableSourceInfo}
 import chisel3.internal.Builder.pushOp
@@ -251,8 +249,8 @@ abstract class ChiselEnum {
     enumRecords.find(_.inst.litValue == id).map(_.name)
   }
 
-  protected def Value: Type = macro EnumMacros.ValImpl
-  protected def Value(id: UInt): Type = macro EnumMacros.ValCustomImpl
+  protected inline def Value: Type =  ${ EnumMacros.ValImpl }
+  protected inline def Value(id: UInt): Type = ${  EnumMacros.ValCustomImpl('id) }
 
   protected def do_Value(name: String): Type = {
     val result = new Type
@@ -335,33 +333,74 @@ abstract class ChiselEnum {
 }
 
 private[chisel3] object EnumMacros {
-  def ValImpl(c: Context): c.Tree = {
-    import c.universe._
+  // import scala.reflect.macros.blackbox.Context
 
-    // Much thanks to michael_s for this solution:
-    // stackoverflow.com/questions/18450203/retrieve-the-name-of-the-value-a-scala-macro-invocation-will-be-assigned-to
-    val term = c.internal.enclosingOwner
-    val name = term.name.decodedName.toString.trim
+  // def ValImpl(c: Context): c.Tree = {
+  //   import c.universe._
 
-    if (name.contains(" ")) {
-      c.abort(c.enclosingPosition, "Value cannot be called without assigning to an enum")
+  //   // Much thanks to michael_s for this solution:
+  //   // stackoverflow.com/questions/18450203/retrieve-the-name-of-the-value-a-scala-macro-invocation-will-be-assigned-to
+  //   val term = c.internal.enclosingOwner
+  //   val name = term.name.decodedName.toString.trim
+
+  //   if (name.contains(" ")) {
+  //     c.abort(c.enclosingPosition, "Value cannot be called without assigning to an enum")
+  //   }
+
+  //   q"""this.do_Value($name)"""
+  // }
+  import scala.quoted.*
+
+  def resolveThis(using Quotes): quotes.reflect.Term = {
+    import quotes.reflect.* 
+    var sym = Symbol.spliceOwner.owner
+    if sym.isClassDef then {
+      return This(sym)
     }
-
-    q"""this.do_Value($name)"""
+    if sym.isPackageDef then {
+      return Ident(sym.termRef)
+    }
+    report.errorAndAbort(s"unknown owner: ${sym.fullName}")
   }
 
-  def ValCustomImpl(c: Context)(id: c.Expr[UInt]): c.universe.Tree = {
-    import c.universe._
+  def ValImpl[T](using q: Quotes, tpe: Type[T]): Expr[T] = {
+    import q.reflect.* 
 
-    val term = c.internal.enclosingOwner
-    val name = term.name.decodedName.toString.trim
-
+    val term = Symbol.spliceOwner
+    val name = term.name.trim
+    
     if (name.contains(" ")) {
-      c.abort(c.enclosingPosition, "Value cannot be called without assigning to an enum")
+      report.errorAndAbort("Value cannot be called without assigning to an enum")
     }
-
-    q"""this.do_Value($name, $id)"""
+    val thisObj = resolveThis
+    Apply(Select.unique(thisObj, "do_Value"), List(Literal(StringConstant(name)))).asExprOf[T]
   }
+
+  def ValCustomImpl[T](id: Expr[UInt])(using q: Quotes, tpe: Type[T]): Expr[T] = {
+    import q.reflect.* 
+
+    val term = Symbol.spliceOwner
+    val name = term.name.trim
+    
+    if (name.contains(" ")) {
+      report.errorAndAbort("Value cannot be called without assigning to an enum")
+    }
+    val thisObj = resolveThis
+    Apply(Select.unique(thisObj, "do_Value"), List(Literal(StringConstant(name)), id.asTerm)).asExprOf[T]
+  }
+
+  // def ValCustomImpl(c: Context)(id: c.Expr[UInt]): c.universe.Tree = {
+  //   import c.universe._
+
+  //   val term = c.internal.enclosingOwner
+  //   val name = term.name.decodedName.toString.trim
+
+  //   if (name.contains(" ")) {
+  //     c.abort(c.enclosingPosition, "Value cannot be called without assigning to an enum")
+  //   }
+
+  //   q"""this.do_Value($name, $id)"""
+  // }
 }
 
 // This is an enum type that can be connected directly to UInts. It is used as a "glue" to cast non-literal UInts

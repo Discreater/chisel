@@ -261,7 +261,7 @@ private[chisel3] object Connection {
       case (ba: Analog) => {
         checkAnalog(a, ba)
         val currentModule = Builder.currentModule.get.asInstanceOf[RawModule]
-        attach.impl(Seq(a, ba), currentModule)(sourceInfo)
+        attach.impl(Seq(a, ba), currentModule)(using sourceInfo)
       }
       case (DontCare) => {
         checkAnalog(a)

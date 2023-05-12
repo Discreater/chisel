@@ -1,6 +1,6 @@
 package chisel3
 
-import chisel3.internal.requireIsChiselType // Fix ambiguous import
+import chisel3.experimental.requireIsChiselType // Fix ambiguous import
 import chisel3.internal.Builder
 import chisel3.experimental.SourceInfo
 

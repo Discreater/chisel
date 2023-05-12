@@ -8,9 +8,6 @@ import chisel3.experimental.{requireIsHardware, SourceInfo}
 import chisel3.internal.{throwException, BaseModule}
 import chisel3.internal.Builder.pushOp
 import chisel3.internal.firrtl._
-import chisel3.internal.sourceinfo.{
-  SourceInfoTransform,
-}
 import chisel3.internal.firrtl.PrimOp._
 import _root_.firrtl.{ir => firrtlir}
 import chisel3.internal.{castToInt, Builder}
@@ -25,7 +22,7 @@ private[chisel3] sealed trait ToBoolable extends Element {
     *
     * @note The width must be known and equal to 1
     */
-  final def asBool(using sourceInfo: SourceInfo): Bool
+  def asBool(using sourceInfo: SourceInfo): Bool
 }
 
 /** A data type for values represented by a single bitvector. This provides basic bitwise operations.
@@ -113,7 +110,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @return the specified bit
     */
   final def apply(x: BigInt)(using sourceInfo: SourceInfo): Bool =
-    do_extract(x)
+    extract(x)
 
   /** Returns the specified bit on this $coll as a [[Bool]], statically addressed.
     *
@@ -121,7 +118,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @return the specified bit
     */
   final def apply(x: Int)(using sourceInfo: SourceInfo): Bool =
-    do_extract(BigInt(x))
+    extract(BigInt(x))
 
   /** Returns the specified bit on this wire as a [[Bool]], dynamically addressed.
     *
@@ -153,7 +150,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @return the specified bit
     */
   final def apply(x: UInt)(using sourceInfo: SourceInfo): Bool =
-    do_extract(x)
+    extract(x)
 
   /** Returns a subset of bits on this $coll from `hi` to `lo` (inclusive), statically addressed.
     *
@@ -202,7 +199,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @return a hardware component contain the requested bits
     */
   final def apply(x: BigInt, y: BigInt)(using sourceInfo: SourceInfo): UInt =
-    do_apply(castToInt(x, "High index"), castToInt(y, "Low index"))
+    apply(castToInt(x, "High index"), castToInt(y, "Low index"))
 
   private[chisel3] def unop[T <: Data](sourceInfo: SourceInfo, dest: T, op: PrimOp): T = {
     requireIsHardware(this, "bits operated on")
@@ -245,7 +242,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @return this $coll with each bit inverted
     * @group Bitwise
     */
-  final def unary_~(using sourceInfo: SourceInfo): Bits
+  def unary_~(using sourceInfo: SourceInfo): Bits
 
   /** Static left shift operator
     *
@@ -256,7 +253,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     */
   // REVIEW TODO: redundant
   // REVIEW TODO: should these return this.type or Bits?
-  final def <<(that: BigInt)(using sourceInfo: SourceInfo): Bits
+  def <<(that: BigInt)(using sourceInfo: SourceInfo): Bits
 
   /** Static left shift operator
     *
@@ -265,7 +262,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * $sumWidthInt
     * @group Bitwise
     */
-  final def <<(that: Int)(using sourceInfo: SourceInfo): Bits
+  def <<(that: Int)(using sourceInfo: SourceInfo): Bits
 
   /** Dynamic left shift operator
     *
@@ -274,7 +271,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @note The width of the returned $coll is `width of this + pow(2, width of that) - 1`.
     * @group Bitwise
     */
-  final def <<(that: UInt)(using sourceInfo: SourceInfo): Bits
+  def <<(that: UInt)(using sourceInfo: SourceInfo): Bits
 
   /** Static right shift operator
     *
@@ -284,7 +281,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @group Bitwise
     */
   // REVIEW TODO: redundant
-  final def >>(that: BigInt)(using sourceInfo: SourceInfo): Bits
+  def >>(that: BigInt)(using sourceInfo: SourceInfo): Bits
 
   /** Static right shift operator
     *
@@ -293,7 +290,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * $unchangedWidth
     * @group Bitwise
     */
-  final def >>(that: Int)(using sourceInfo: SourceInfo): Bits
+  def >>(that: Int)(using sourceInfo: SourceInfo): Bits
 
   /** Dynamic right shift operator
     *
@@ -303,7 +300,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * $unchangedWidth
     * @group Bitwise
     */
-  final def >>(that: UInt)(using sourceInfo: SourceInfo): Bits
+  def >>(that: UInt)(using sourceInfo: SourceInfo): Bits
 
   /** Returns the contents of this wire as a [[scala.collection.Seq]] of [[Bool]]. */
   final def asBools(using sourceInfo: SourceInfo): Seq[Bool] =
@@ -314,7 +311,7 @@ sealed abstract class Bits(private[chisel3] val width: Width) extends Element wi
     * @note The arithmetic value is not preserved if the most-significant bit is set. For example, a [[UInt]] of
     * width 3 and value 7 (0b111) would become an [[SInt]] of width 3 and value -1.
     */
-  final def asSInt(using sourceInfo: SourceInfo): SInt
+  def asSInt(using sourceInfo: SourceInfo): SInt
 
   final def do_asBool(using sourceInfo: SourceInfo): Bool = {
     width match {
@@ -533,17 +530,17 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     */
   final def unary_!(using sourceInfo: SourceInfo): Bool = this === 0.U(1.W)
 
-  override def do_<<(that: Int)(using sourceInfo: SourceInfo): UInt =
+  def <<(that: Int)(using sourceInfo: SourceInfo): UInt =
     binop(sourceInfo, UInt(this.width + that), ShiftLeftOp, validateShiftAmount(that))
-  override def do_<<(that: BigInt)(using sourceInfo: SourceInfo): UInt =
+  def <<(that: BigInt)(using sourceInfo: SourceInfo): UInt =
     this << castToInt(that, "Shift amount")
-  override def do_<<(that: UInt)(using sourceInfo: SourceInfo): UInt =
+  def <<(that: UInt)(using sourceInfo: SourceInfo): UInt =
     binop(sourceInfo, UInt(this.width.dynamicShiftLeft(that.width)), DynamicShiftLeftOp, that)
-  override def do_>>(that: Int)(using sourceInfo: SourceInfo): UInt =
+  def >>(that: Int)(using sourceInfo: SourceInfo): UInt =
     binop(sourceInfo, UInt(this.width.shiftRight(that)), ShiftRightOp, validateShiftAmount(that))
-  override def do_>>(that: BigInt)(using sourceInfo: SourceInfo): UInt =
+  def >>(that: BigInt)(using sourceInfo: SourceInfo): UInt =
     this >> castToInt(that, "Shift amount")
-  override def do_>>(that: UInt)(using sourceInfo: SourceInfo): UInt =
+  def >>(that: UInt)(using sourceInfo: SourceInfo): UInt =
     binop(sourceInfo, UInt(this.width), DynamicShiftRightOp, that)
 
   /**
@@ -554,8 +551,8 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
   final def rotateLeft(n: Int)(using sourceInfo: SourceInfo): UInt = width match {
     case _ if (n == 0)             => this
     case KnownWidth(w) if (w <= 1) => this
-    case KnownWidth(w) if n >= w   => do_rotateLeft(n % w)
-    case _ if (n < 0)              => do_rotateRight(-n)
+    case KnownWidth(w) if n >= w   => rotateLeft(n % w)
+    case _ if (n < 0)              => rotateRight(-n)
     case _                         => tail(n) ## head(n)
   }
 
@@ -565,9 +562,9 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     * @return UInt of same width rotated right n bits
     */
   final def rotateRight(n: Int)(using sourceInfo: SourceInfo): UInt = width match {
-    case _ if (n <= 0)             => do_rotateLeft(-n)
+    case _ if (n <= 0)             => rotateLeft(-n)
     case KnownWidth(w) if (w <= 1) => this
-    case KnownWidth(w) if n >= w   => do_rotateRight(n % w)
+    case KnownWidth(w) if n >= w   => rotateRight(n % w)
     case _                         => this(n - 1, 0) ## (this >> n)
   }
 
@@ -624,6 +621,7 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
   private def subtractAsSInt(that: UInt)(using sourceInfo: SourceInfo): SInt =
     binop(sourceInfo, SInt((this.width.max(that.width)) + 1), SubOp, that)
 }
+object UInt extends UIntFactory
 
 /** A data type for signed integers, represented as a binary bitvector. Defines arithmetic operations between other
   * integer types.
@@ -814,11 +812,11 @@ sealed class SInt private[chisel3] (width: Width) extends Bits(width) with Num[S
     this := that.asSInt
   }
 }
-
+object SInt extends SIntFactory
 sealed trait Reset extends Element with ToBoolable {
 
   /** Casts this $coll to an [[AsyncReset]] */
-  final def asAsyncReset(using sourceInfo: SourceInfo): AsyncReset
+  def asAsyncReset(using sourceInfo: SourceInfo): AsyncReset
 }
 
 object Reset {
@@ -1006,3 +1004,4 @@ sealed class Bool() extends UInt(1.W) with Reset {
   def do_asAsyncReset(using sourceInfo: SourceInfo): AsyncReset =
     pushOp(DefPrim(sourceInfo, AsyncReset(), AsAsyncResetOp, ref))
 }
+object Bool extends BoolFactory

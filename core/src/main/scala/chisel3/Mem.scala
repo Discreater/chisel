@@ -10,7 +10,7 @@ import firrtl.{ir => fir}
 import chisel3.internal._
 import chisel3.internal.Builder.pushCommand
 import chisel3.internal.firrtl._
-import chisel3.experimental.{SourceInfo, SourceLine}
+import chisel3.experimental.{SourceInfo, SourceLine, requireIsChiselType}
 
 object Mem {
 
@@ -39,7 +39,7 @@ object Mem {
     * @param t data type of memory element
     */
   def apply[T <: Data](size: Int, t: T)(using sourceInfo: SourceInfo): Mem[T] =
-    do_apply(BigInt(size), t)(sourceInfo)
+    apply(BigInt(size), t)
 }
 
 sealed abstract class MemBase[T <: Data](val t: T, val length: BigInt, sourceInfo: SourceInfo)
@@ -47,9 +47,9 @@ sealed abstract class MemBase[T <: Data](val t: T, val length: BigInt, sourceInf
     with NamedComponent
     with SourceInfoDoc {
 
-  if (t.isConst) Builder.error("Mem type cannot be const.")(sourceInfo)
+  if (t.isConst) Builder.error("Mem type cannot be const.")(using sourceInfo)
 
-  requireNoProbeTypeModifier(t, "Cannot make a Mem of a Chisel type with a probe modifier.")(sourceInfo)
+  requireNoProbeTypeModifier(t, "Cannot make a Mem of a Chisel type with a probe modifier.")(using sourceInfo)
 
   _parent.foreach(_.addId(this))
 
@@ -80,7 +80,7 @@ sealed abstract class MemBase[T <: Data](val t: T, val length: BigInt, sourceInf
     * class documentation of the memory for more detailed information.
     */
   def apply(idx: Int)(using sourceInfo: SourceInfo): T =
-    do_apply(BigInt(idx))(sourceInfo)
+    apply(BigInt(idx))
 
   /** Creates a read/write accessor into the memory with dynamic addressing.
     * See the class documentation of the memory for more detailed information.
@@ -229,7 +229,7 @@ sealed abstract class MemBase[T <: Data](val t: T, val length: BigInt, sourceInf
       )
     }
     requireIsHardware(idx, "memory port index")
-    val i = Vec.truncateIndex(idx, length)(sourceInfo)
+    val i = Vec.truncateIndex(idx, length)(using sourceInfo)
 
     val port = pushCommand(
       DefMemPort(sourceInfo, t.cloneTypeFull, Node(this), dir, i.ref, clock.ref)
@@ -297,7 +297,7 @@ object SyncReadMem {
   )(
     using sourceInfo: SourceInfo
   ): SyncReadMem[T] =
-    do_apply(BigInt(size), t)(sourceInfo)
+    apply(BigInt(size), t)
 
   /** Creates a sequential/synchronous-read, sequential/synchronous-write [[SyncReadMem]].
     *
@@ -312,7 +312,7 @@ object SyncReadMem {
   )(
     using sourceInfo: SourceInfo
   ): SyncReadMem[T] =
-    do_apply(BigInt(size), t, ruw)(sourceInfo)
+    apply(BigInt(size), t, ruw)
 }
 
 /** A sequential/synchronous-read, sequential/synchronous-write memory.
@@ -333,7 +333,7 @@ sealed class SyncReadMem[T <: Data] private[chisel3] (
     extends MemBase[T](t, n, sourceInfo) {
 
   override def read(idx: UInt)(using sourceInfo: SourceInfo): T =
-    do_read(idx = idx, en = true.B)
+    read(idx = idx, en = true.B)
 
   def read(idx: UInt, en: Bool)(using sourceInfo: SourceInfo): T =
     _read_impl(idx, en, Builder.forcedClock, true)

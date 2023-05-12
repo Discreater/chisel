@@ -49,7 +49,7 @@ object assert extends VerifPrintMacrosDoc {
     data:    Bits*
   )(
     using sourceInfo: SourceInfo
-  ): Assert = ${ _applyMacroWithInterpolatorCheck('cond, 'message, 'data)( 'sourceInfo) }
+  ): Assert = ${ _applyMacroWithInterpolatorCheck('cond, 'message, 'data)('sourceInfo) }
 
   /** Checks for a condition to be valid in the circuit at all times. If the
     * condition evaluates to false, the circuit simulation stops with an error.
@@ -90,7 +90,7 @@ object assert extends VerifPrintMacrosDoc {
   )(using q: Quotes): Expr[Assert] = {
     import q.reflect.*
     printf._checkFormatString(message)
-    '{_applyWithSourceLinePrintable($cond, getLine(q), Some(_root_.chisel3.Printable.pack($message, $data: _*)))($sourceInfo)}
+    '{_applyWithSourceLinePrintable($cond, getLine(q), Some(_root_.chisel3.Printable.pack($message, $data: _*)))(using $sourceInfo)}
     // val apply_impl_do = symbolOf[this.type].asClass.module.info.member(TermName("_applyWithSourceLinePrintable"))
     // q"$apply_impl_do($cond, ${getLine(c)}, _root_.scala.Some(_root_.chisel3.Printable.pack($message, ..$data)))($sourceInfo)"
   }
@@ -112,7 +112,7 @@ object assert extends VerifPrintMacrosDoc {
     sourceInfo: Expr[SourceInfo]
   )(using q: Quotes): Expr[Assert] = {
     import q.reflect.*
-    '{_applyWithSourceLinePrintable($cond, getLine(q), Some(Printable.pack($message, $data: _*)))($sourceInfo)}
+    '{_applyWithSourceLinePrintable($cond, getLine(q), Some(Printable.pack($message, $data: _*)))(using $sourceInfo)}
     // val apply_impl_do = symbolOf[this.type].asClass.module.info.member(TermName("_applyWithSourceLinePrintable"))
     // q"$apply_impl_do($cond, ${getLine(c)}, _root_.scala.Some(_root_.chisel3.Printable.pack($message, ..$data)))($sourceInfo)"
   }
@@ -124,7 +124,7 @@ object assert extends VerifPrintMacrosDoc {
   )(sourceInfo: Expr[SourceInfo]
   )(using q: Quotes): Expr[Assert] = {
     import q.reflect.*
-    '{_applyWithSourceLinePrintable($cond, getLine(q), Some($message))($sourceInfo)}
+    '{_applyWithSourceLinePrintable($cond, getLine(q), Some($message))(using $sourceInfo)}
     // val apply_impl_do = symbolOf[this.type].asClass.module.info.member(TermName("_applyWithSourceLinePrintable"))
     // q"$apply_impl_do($cond, ${getLine(c)}, _root_.scala.Some($message))($sourceInfo)"
   }
@@ -135,7 +135,7 @@ object assert extends VerifPrintMacrosDoc {
    )( sourceInfo: Expr[SourceInfo]
   )(using q: Quotes): Expr[Assert] = {
     import q.reflect.*
-    '{_applyWithSourceLinePrintable($cond, getLine(q), None)($sourceInfo)}
+    '{_applyWithSourceLinePrintable($cond, getLine(q), None)(using $sourceInfo)}
     // val apply_impl_do = symbolOf[this.type].asClass.module.info.member(TermName("_applyWithSourceLinePrintable"))
     // q"$apply_impl_do($cond, ${getLine(c)}, _root_.scala.None)($sourceInfo)"
   }
@@ -254,7 +254,7 @@ object assume extends VerifPrintMacrosDoc {
   )(using q: Quotes): Expr[Assume] = {
     import q.reflect.*
     printf._checkFormatString(message)
-    '{_applyWithSourceLinePrintable($cond, getLine(q), Some(Printable.pack($message, $data: _*)))($sourceInfo)}
+    '{_applyWithSourceLinePrintable($cond, getLine(q), Some(Printable.pack($message, $data: _*)))(using $sourceInfo)}
     // val apply_impl_do = symbolOf[this.type].asClass.module.info.member(TermName("_applyWithSourceLinePrintable"))
     // q"$apply_impl_do($cond, ${getLine(c)}, _root_.scala.Some(_root_.chisel3.Printable.pack($message, ..$data)))($sourceInfo)"
   }
@@ -267,7 +267,7 @@ object assume extends VerifPrintMacrosDoc {
   )(sourceInfo: Expr[SourceInfo]
   )(using q: Quotes): Expr[Assume] = {
     import q.reflect.*
-    '{_applyWithSourceLinePrintable($cond, getLine(q), Some(Printable.pack($message, $data: _*)))($sourceInfo)}
+    '{_applyWithSourceLinePrintable($cond, getLine(q), Some(Printable.pack($message, $data: _*)))(using $sourceInfo)}
     // val apply_impl_do = symbolOf[this.type].asClass.module.info.member(TermName("_applyWithSourceLinePrintable"))
     // q"$apply_impl_do($cond, ${getLine(c)}, _root_.scala.Some(_root_.chisel3.Printable.pack($message, ..$data)))($sourceInfo)"
   }
@@ -279,7 +279,7 @@ object assume extends VerifPrintMacrosDoc {
   )(sourceInfo: Expr[SourceInfo]
   )(using q: Quotes): Expr[Assume] = {
         import q.reflect.*
-    '{_applyWithSourceLinePrintable($cond, getLine(q), Some($message))($sourceInfo)}
+    '{_applyWithSourceLinePrintable($cond, getLine(q), Some($message))(using $sourceInfo)}
     // val apply_impl_do = symbolOf[this.type].asClass.module.info.member(TermName("_applyWithSourceLinePrintable"))
     // q"$apply_impl_do($cond, ${getLine(c)}, _root_.scala.Some($message))($sourceInfo)"
   }
@@ -290,7 +290,7 @@ object assume extends VerifPrintMacrosDoc {
   )(sourceInfo: Expr[SourceInfo]
   )(using q: Quotes): Expr[Assume] = {
     import q.reflect.*
-    '{_applyWithSourceLinePrintable($cond, getLine(q), None)($sourceInfo)}
+    '{_applyWithSourceLinePrintable($cond, getLine(q), None)(using $sourceInfo)}
     // val apply_impl_do = symbolOf[this.type].asClass.module.info.member(TermName("_applyWithSourceLinePrintable"))
     // q"$apply_impl_do($cond, ${getLine(c)}, _root_.scala.None)($sourceInfo)"
   }
@@ -367,7 +367,7 @@ object cover extends VerifPrintMacrosDoc {
   )(sourceInfo: Expr[SourceInfo]
   )(using q: Quotes): Expr[Cover] = {
     import q.reflect.*
-    '{_applyWithSourceLine($cond, getLine(q), None)($sourceInfo)}
+    '{_applyWithSourceLine($cond, getLine(q), None)(using $sourceInfo)}
     // val apply_impl_do = symbolOf[this.type].asClass.module.info.member(TermName("_applyWithSourceLine"))
     // q"$apply_impl_do($cond, ${getLine(c)}, _root_.scala.None)($sourceInfo)"
   }
@@ -379,7 +379,7 @@ object cover extends VerifPrintMacrosDoc {
   )(sourceInfo: Expr[SourceInfo]
   )(using q: Quotes): Expr[Cover] = {
     import q.reflect.*
-    '{_applyWithSourceLine($cond, getLine(q), Some($message))($sourceInfo)}
+    '{_applyWithSourceLine($cond, getLine(q), Some($message))(using $sourceInfo)}
     // val apply_impl_do = symbolOf[this.type].asClass.module.info.member(TermName("_applyWithSourceLine"))
     // q"$apply_impl_do($cond, ${getLine(c)}, _root_.scala.Some($message))($sourceInfo)"
   }
@@ -409,7 +409,7 @@ object stop {
   def apply(message: String = "")(using sourceInfo: SourceInfo): Stop = {
     val stp = new Stop()
     when(!Module.reset.asBool) {
-      pushCommand(Stop(stp, sourceInfo, Builder.forcedClock.ref, 0))
+      pushCommand(chisel3.internal.firrtl.Stop(stp, sourceInfo, Builder.forcedClock.ref, 0))
     }
     stp
   }

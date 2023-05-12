@@ -45,7 +45,7 @@ object Instantiate {
     * @param con module construction, must be actual call to constructor (`new MyModule(...)`)
     * @return constructed module `Instance`
     */
-  def apply[A <: RawModule](con: => A): Instance[A] = macro internal.impl[A]
+  inline def apply[A <: RawModule](con: => A): Instance[A] = ${internal.impl[A]('con) }
 
   // Data uses referential equality by default, but for looking up Data in the cache, we need to use
   // structural equality for Data unbound types and literal values
@@ -124,7 +124,7 @@ object Instantiate {
         key, {
           // The definition needs to have no source locator because otherwise it will be unstably
           // derived from the first invocation of Instantiate for the particular Module
-          Definition.do_apply(f(args))(UnlocatableSourceInfo)
+          Definition.apply(f(args))(using UnlocatableSourceInfo)
         }
       )
       .asInstanceOf[Definition[A]]
@@ -132,12 +132,70 @@ object Instantiate {
   }
 
   private object internal {
+    // // impl cannot be private, but it can be inside of a private object which hides it from the public
+    // // API and ScalaDoc
+    // def impl[A <: RawModule: c.WeakTypeTag](c: Context)(con: c.Tree): c.Tree = {
+    //   import c.universe._
+
+    //   def matchStructure(proto: List[List[Tree]], args: List[Tree]): List[List[Tree]] = {
+    //     val it = args.iterator
+    //     proto.map(_.map(_ => it.next()))
+    //   }
+
+    //   // The arguments to the constructor have been flattened to a single tuple
+    //   // When there is more than 1 argument, we need to turn the flat tuple back into the multiple parameter lists,
+    //   //   eg. (arg: (A, B, C, D)) becomes (arg._1)(arg._2, arg._3)(arg._4)
+    //   def untupleFuncArgsToConArgs(argss: List[List[Tree]], args: List[Tree], funcArg: Ident): List[List[Tree]] = {
+    //     var n = 0
+    //     argss.map { inner =>
+    //       inner.map { _ =>
+    //         n += 1
+    //         val term = TermName(s"_$n")
+    //         q"$funcArg.$term"
+    //       }
+    //     }
+    //   }
+
+    //   con match {
+    //     case q"new $tpname[..$tparams](...$argss)" =>
+    //       // We first flatten the [potentially] multiple parameter lists into a single tuple (size 0 and 1 are special)
+    //       val args = argss.flatten
+    //       val nargs = args.size
+
+    //       val funcArg = Ident(TermName("arg"))
+
+    //       // 0 and 1 arguments to the constructor are special (ie. there isn't a tuple)
+    //       val conArgs: List[List[Tree]] = nargs match {
+    //         case 0 => Nil
+    //         // Must match structure for case of only 1 implicit argument (ie. ()(arg))
+    //         case 1 => matchStructure(argss, List(funcArg))
+    //         case _ => untupleFuncArgsToConArgs(argss, args, funcArg)
+    //       }
+
+    //       // We can't quasi-quote this too early, needs to be splatted in the later context
+    //       // widen turns singleton type into nearest non-singleton type, eg. Int(3) => Int
+    //       val funcArgTypes = args.map(_.asInstanceOf[Tree].tpe.widen)
+    //       val constructor = q"(($funcArg: (..$funcArgTypes)) => new $tpname[..$tparams](...$conArgs))"
+    //       val tup = q"(..$args)"
+    //       q"chisel3.experimental.hierarchy.Instantiate._impl[(..$funcArgTypes), $tpname]($tup, $constructor)"
+
+    //     case _ =>
+    //       val msg =
+    //         s"Argument to Instantiate(...) must be of form 'new <T <: chisel3.Module>(<arguments...>)'.\n" +
+    //           "Note that named arguments are currently not supported.\n" +
+    //           s"Got: '$con'"
+    //       c.error(con.pos, msg)
+    //       con
+    //   }
+    // }
+
+    import scala.quoted._
     // impl cannot be private, but it can be inside of a private object which hides it from the public
     // API and ScalaDoc
-    def impl[A <: RawModule: c.WeakTypeTag](c: Context)(con: c.Tree): c.Tree = {
-      import c.universe._
+    def impl[A <: RawModule](con: Expr[A])(using qctx: Quotes): Expr[Instance[A]] = {
+      import qctx.reflect._
 
-      def matchStructure(proto: List[List[Tree]], args: List[Tree]): List[List[Tree]] = {
+      def matchStructure(proto: List[List[Term]], args: List[Term]): List[List[Term]] = {
         val it = args.iterator
         proto.map(_.map(_ => it.next()))
       }
@@ -145,27 +203,56 @@ object Instantiate {
       // The arguments to the constructor have been flattened to a single tuple
       // When there is more than 1 argument, we need to turn the flat tuple back into the multiple parameter lists,
       //   eg. (arg: (A, B, C, D)) becomes (arg._1)(arg._2, arg._3)(arg._4)
-      def untupleFuncArgsToConArgs(argss: List[List[Tree]], args: List[Tree], funcArg: Ident): List[List[Tree]] = {
+      def untupleFuncArgsToConArgs(argss: List[List[Term]], args: List[Term], funcArg: Term): List[List[Term]] = {
         var n = 0
         argss.map { inner =>
           inner.map { _ =>
             n += 1
-            val term = TermName(s"_$n")
-            q"$funcArg.$term"
+            Select.unique(funcArg, s"_${n}")
           }
         }
       }
 
+      def collectArgss(expr: Term): (List[List[Term]], Term) = {
+        expr match {
+          case Apply(fn, args) => {
+            val (argss, last) = collectArgss(fn)
+            (argss :+ args, last)
+          }
+          case _ => (Nil, expr)
+        }
+      }
+
+      def reportErrorAndAbort = {
+          val msg =
+            s"Argument to Instantiate(...) must be of form 'new <T <: chisel3.Module>(<arguments...>)'.\n" +
+              "Note that named arguments are currently not supported.\n" +
+              s"Got: '$con'"
+          report.errorAndAbort(msg)
+      }
+
       con match {
-        case q"new $tpname[..$tparams](...$argss)" =>
-          // We first flatten the [potentially] multiple parameter lists into a single tuple (size 0 and 1 are special)
+        case Inlined(_, _, exp) => {
+          val (argss, tree) = collectArgss(exp)
+          val (tpname, name, tparams) = tree match {
+            case TypeApply(Select(New(tpname), name), tparams) => {
+              (tpname, name, tparams)
+            }
+            case Select(New(tpname), name) => {
+              (tpname, name, Nil)
+            }
+          }
+          if name != "<init>" then {
+            reportErrorAndAbort
+          }
           val args = argss.flatten
           val nargs = args.size
 
-          val funcArg = Ident(TermName("arg"))
+          val funcArg = Ident(TermRef(TypeRepr.of[Tuple], "arg"))
+
 
           // 0 and 1 arguments to the constructor are special (ie. there isn't a tuple)
-          val conArgs: List[List[Tree]] = nargs match {
+          val conArgs: List[List[Term]] = nargs match {
             case 0 => Nil
             // Must match structure for case of only 1 implicit argument (ie. ()(arg))
             case 1 => matchStructure(argss, List(funcArg))
@@ -174,18 +261,27 @@ object Instantiate {
 
           // We can't quasi-quote this too early, needs to be splatted in the later context
           // widen turns singleton type into nearest non-singleton type, eg. Int(3) => Int
-          val funcArgTypes = args.map(_.asInstanceOf[Tree].tpe.widen)
-          val constructor = q"(($funcArg: (..$funcArgTypes)) => new $tpname[..$tparams](...$conArgs))"
-          val tup = q"(..$args)"
-          q"chisel3.experimental.hierarchy.Instantiate._impl[(..$funcArgTypes), $tpname]($tup, $constructor)"
+          val funcArgTypes = args.map(_.tpe.widen)
+          val methdType = MethodType(List("arg"))(_ => List(TypeRepr.of[Tuple]), _ => TypeRepr.of[A])
+          val constructor = Lambda(Symbol.spliceOwner, methdType, {
+            case (methSym, List(arg:Term)) =>
+              var tree: Term = Select.unique(New(tpname), "<init>")
+              if tparams.isEmpty then {
+                tree = TypeApply(tree, tparams)
+              }
+              for (arg <- conArgs) {
+                tree = Apply(tree, arg)
+              }
+              tree
+          })
+          val tup = Expr.ofTupleFromSeq(args.map(_.asExpr))
 
-        case _ =>
-          val msg =
-            s"Argument to Instantiate(...) must be of form 'new <T <: chisel3.Module>(<arguments...>)'.\n" +
-              "Note that named arguments are currently not supported.\n" +
-              s"Got: '$con'"
-          c.error(con.pos, msg)
-          con
+          
+          Apply(Select.unique(Ident(TermRef(TypeRepr.of[Instantiate.type], "Instantiate")), "_impl"), List(tup.asTerm, constructor)).asExprOf
+        }
+        case _ => {
+          reportErrorAndAbort
+        }
       }
     }
   }

@@ -8,6 +8,7 @@ package chisel3.internal
 import scala.quoted._
 import scala.annotation.{experimental, MacroAnnotation}
 import scala.collection.mutable
+import scala.annotation.StaticAnnotation
 
 @experimental
 private[chisel3] class instantiable extends MacroAnnotation {
@@ -126,4 +127,4 @@ private[chisel3] class instantiable extends MacroAnnotation {
 // private[chisel3] class instantiable extends StaticAnnotation {
 //   def macroTransform(annottees: Any*): Any = macro instantiableMacro.impl
 // }
-// private[chisel3] class public extends StaticAnnotation
+private[chisel3] class public extends StaticAnnotation

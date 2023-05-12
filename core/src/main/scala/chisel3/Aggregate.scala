@@ -10,7 +10,7 @@ import scala.collection.immutable.{SeqMap, VectorMap}
 import scala.collection.mutable.{HashSet, LinkedHashMap}
 import scala.language.experimental.macros
 import chisel3.experimental.{BaseModule, BundleLiteralException, OpaqueType, VecLiteralException}
-import chisel3.experimental.{SourceInfo, UnlocatableSourceInfo}
+import chisel3.experimental.{SourceInfo, UnlocatableSourceInfo, requireIsChiselType}
 import chisel3.internal._
 import chisel3.internal.Builder.pushCommand
 import chisel3.internal.firrtl._
@@ -573,6 +573,7 @@ sealed class Vec[T <: Data] private[chisel3] (gen: => T, val length: Int) extend
     clone
   }
 }
+object Vec extends VecFactory
 
 object VecInit extends SourceInfoDoc {
 
@@ -753,7 +754,7 @@ object VecInit extends SourceInfoDoc {
   )(
     using sourceInfo: SourceInfo
   ): Vec[Vec[T]] = {
-    do_tabulate(n, m)((_, _) => gen)
+    tabulate(n, m)((_, _) => gen)
   }
 
   /** Creates a new 3D [[Vec]] of length `n by m by p` composed of the result of the given
@@ -773,7 +774,7 @@ object VecInit extends SourceInfoDoc {
   )(
     using sourceInfo: SourceInfo
   ): Vec[Vec[Vec[T]]] = {
-    do_tabulate(n, m, p)((_, _, _) => gen)
+    tabulate(n, m, p)((_, _, _) => gen)
   }
 
   /** Creates a new [[Vec]] of length `n` composed of the result of the given

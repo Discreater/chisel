@@ -40,7 +40,7 @@ trait Num[T <: Data] {
     * $maxWidth
     * @group Arithmetic
     */
-  final def +(that: T)(using sourceInfo: SourceInfo): T
+  def +(that: T)(using sourceInfo: SourceInfo): T
 
   /** Multiplication operator
     *
@@ -50,7 +50,7 @@ trait Num[T <: Data] {
     * $singleCycleMul
     * @group Arithmetic
     */
-  final def *(that: T)(using sourceInfo: SourceInfo): T
+  def *(that: T)(using sourceInfo: SourceInfo): T
 
   /** Division operator
     *
@@ -60,7 +60,7 @@ trait Num[T <: Data] {
     * @todo full rules
     * @group Arithmetic
     */
-  final def /(that: T)(using sourceInfo: SourceInfo): T
+  def /(that: T)(using sourceInfo: SourceInfo): T
 
   /** Modulo operator
     *
@@ -69,7 +69,7 @@ trait Num[T <: Data] {
     * $singleCycleDiv
     * @group Arithmetic
     */
-  final def %(that: T)(using sourceInfo: SourceInfo): T
+  def %(that: T)(using sourceInfo: SourceInfo): T
 
   /** Subtraction operator
     *
@@ -78,7 +78,7 @@ trait Num[T <: Data] {
     * $maxWidthPlusOne
     * @group Arithmetic
     */
-  final def -(that: T)(using sourceInfo: SourceInfo): T
+  def -(that: T)(using sourceInfo: SourceInfo): T
 
   /** Less than operator
     *
@@ -86,7 +86,7 @@ trait Num[T <: Data] {
     * @return a hardware [[Bool]] asserted if this $coll is less than `that`
     * @group Comparison
     */
-  final def <(that: T)(using sourceInfo: SourceInfo): Bool
+  def <(that: T)(using sourceInfo: SourceInfo): Bool
 
   /** Less than or equal to operator
     *
@@ -94,7 +94,7 @@ trait Num[T <: Data] {
     * @return a hardware [[Bool]] asserted if this $coll is less than or equal to `that`
     * @group Comparison
     */
-  final def <=(that: T)(using sourceInfo: SourceInfo): Bool
+  def <=(that: T)(using sourceInfo: SourceInfo): Bool
 
   /** Greater than operator
     *
@@ -102,7 +102,7 @@ trait Num[T <: Data] {
     * @return a hardware [[Bool]] asserted if this $coll is greater than `that`
     * @group Comparison
     */
-  final def >(that: T)(using sourceInfo: SourceInfo): Bool
+  def >(that: T)(using sourceInfo: SourceInfo): Bool
 
   /** Greater than or equal to operator
     *
@@ -110,7 +110,7 @@ trait Num[T <: Data] {
     * @return a hardware [[Bool]] asserted if this $coll is greather than or equal to `that`
     * @group Comparison
     */
-  final def >=(that: T)(using sourceInfo: SourceInfo): Bool
+  def >=(that: T)(using sourceInfo: SourceInfo): Bool
 
   /** Absolute value operator
     *
@@ -118,7 +118,7 @@ trait Num[T <: Data] {
     * $unchangedWidth
     * @group Arithmetic
     */
-  final def abs(using sourceInfo: SourceInfo): T
+  def abs(using sourceInfo: SourceInfo): T
 
   /** Minimum operator
     *
@@ -127,7 +127,7 @@ trait Num[T <: Data] {
     * $maxWidth
     * @group Arithmetic
     */
-  final def min(that: T)(using sourceInfo: SourceInfo): T =
+  def min(that: T)(using sourceInfo: SourceInfo): T =
     Mux(this < that, this.asInstanceOf[T], that)
 
   /** Maximum operator
@@ -137,7 +137,7 @@ trait Num[T <: Data] {
     * $maxWidth
     * @group Arithmetic
     */
-  final def max(that: T)(using sourceInfo: SourceInfo): T =
+  def max(that: T)(using sourceInfo: SourceInfo): T =
     Mux(this < that, that, this.asInstanceOf[T])
 }
 

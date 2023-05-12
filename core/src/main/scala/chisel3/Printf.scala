@@ -89,7 +89,7 @@ object printf {
   }
 
   /** Named class for [[printf]]s. */
-  final class Printf private[chisel3] (val pable: Printable) extends VerificationStatement
+  final class Printf private[chisel3] (val pable: chisel3.Printable) extends VerificationStatement
 
   /** Prints a message in simulation
     *
@@ -133,7 +133,7 @@ object printf {
   def _applyMacroWithInterpolatorCheck(fmt: Expr[String], data: Expr[Seq[Bits]], sourceInfo: Expr[SourceInfo])(using q: Quotes): Expr[Printf] = {
     import q.reflect.*
     _checkFormatString(fmt)
-    '{ printf.apply(_root_.chisel3.Printable.pack($fmt, $data*))($sourceInfo)}
+    '{ printf.apply(_root_.chisel3.Printable.pack($fmt, $data*))(using $sourceInfo)}
   }
 
   // def _applyMacroWithInterpolatorCheck(
@@ -162,11 +162,11 @@ object printf {
     * @see [[Printable]] documentation
     * @param pable [[Printable]] to print
     */
-  def apply(pable: Printable)(using sourceInfo: SourceInfo): Printf =
-    printfWithReset(pable)(sourceInfo)
+  def apply(pable: chisel3.Printable)(using sourceInfo: SourceInfo): Printf =
+    printfWithReset(pable)
 
   private[chisel3] def printfWithReset(
-    pable: Printable
+    pable: chisel3.Printable
   )(
     using sourceInfo: SourceInfo
   ): Printf = {
@@ -178,14 +178,14 @@ object printf {
   }
 
   private[chisel3] def printfWithoutReset(
-    pable: Printable
+    pable: chisel3.Printable
   )(
     using sourceInfo: SourceInfo
   ): Printf = {
     val clock = Builder.forcedClock
     val printfId = new Printf(pable)
 
-    Printable.checkScope(pable)
+    chisel3.Printable.checkScope(pable)
 
     pushCommand(chisel3.internal.firrtl.Printf(printfId, sourceInfo, clock.ref, pable))
     printfId
@@ -196,5 +196,5 @@ object printf {
   )(
     using sourceInfo: SourceInfo
   ): Printf =
-    printfWithoutReset(Printable.pack(fmt, data: _*))
+    printfWithoutReset(chisel3.Printable.pack(fmt, data: _*))
 }

@@ -12,6 +12,9 @@
 
 package chisel3.internal.naming
 
+import scala.annotation.MacroAnnotation
+import scala.quoted.Quotes
+
 // import scala.reflect.macros.whitebox.Context
 // import scala.annotation.{compileTimeOnly, StaticAnnotation}
 // import scala.language.experimental.macros
@@ -147,11 +150,14 @@ package chisel3.internal.naming
 //   }
 // }
 
-// @compileTimeOnly("enable macro paradise to expand macro annotations")
-// class dump extends StaticAnnotation {
-//   def macroTransform(annottees: Any*): Any = macro chisel3.internal.naming.DebugTransforms.dump
-// }
-// @compileTimeOnly("enable macro paradise to expand macro annotations")
-// class treedump extends StaticAnnotation {
-//   def macroTransform(annottees: Any*): Any = macro chisel3.internal.naming.DebugTransforms.treedump
-// }
+import scala.quoted
+import scala.annotation.{experimental, MacroAnnotation}
+
+@experimental
+class dump extends MacroAnnotation {
+    override def transform(using q: Quotes)(tree: q.reflect.Definition): List[q.reflect.Definition] = ???
+}
+@experimental
+class treedump extends MacroAnnotation {
+    override def transform(using q: Quotes)(tree: q.reflect.Definition): List[q.reflect.Definition] = ???
+}

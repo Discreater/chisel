@@ -47,12 +47,5 @@ package object sourceinfo {
   )
   type SourceLine = chisel3.experimental.SourceLine
 
-  @deprecated(
-    "APIs in chisel3.internal are not intended to be public. Use chisel3.experimental.SourceInfo",
-    "Chisel 3.6"
-  )
-  object SourceInfo {
-    implicit def materialize: SourceInfo = macro SourceInfoMacro.generate_source_info
-  }
 
 }

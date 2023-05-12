@@ -110,27 +110,27 @@ private[chisel3] object MonoConnect {
 
       // Handle legal element cases, note (Bool, Bool) is caught by the first two, as Bool is a UInt
       case (sink_e: Bool, source_e: UInt) =>
-        elemConnect(sourceInfo, sink_e, source_e, context_mod)
+        elemConnect(using sourceInfo)(sink_e, source_e, context_mod)
       case (sink_e: UInt, source_e: Bool) =>
-        elemConnect(sourceInfo, sink_e, source_e, context_mod)
+        elemConnect(using sourceInfo)(sink_e, source_e, context_mod)
       case (sink_e: UInt, source_e: UInt) =>
-        elemConnect(sourceInfo, sink_e, source_e, context_mod)
+        elemConnect(using sourceInfo)(sink_e, source_e, context_mod)
       case (sink_e: SInt, source_e: SInt) =>
-        elemConnect(sourceInfo, sink_e, source_e, context_mod)
+        elemConnect(using sourceInfo)(sink_e, source_e, context_mod)
       case (sink_e: Clock, source_e: Clock) =>
-        elemConnect(sourceInfo, sink_e, source_e, context_mod)
+        elemConnect(using sourceInfo)(sink_e, source_e, context_mod)
       case (sink_e: AsyncReset, source_e: AsyncReset) =>
-        elemConnect(sourceInfo, sink_e, source_e, context_mod)
+        elemConnect(using sourceInfo)(sink_e, source_e, context_mod)
       case (sink_e: ResetType, source_e: Reset) =>
-        elemConnect(sourceInfo, sink_e, source_e, context_mod)
+        elemConnect(using sourceInfo)(sink_e, source_e, context_mod)
       case (sink_e: Reset, source_e: ResetType) =>
-        elemConnect(sourceInfo, sink_e, source_e, context_mod)
+        elemConnect(using sourceInfo)(sink_e, source_e, context_mod)
       case (sink_e: EnumType, source_e: UnsafeEnum) =>
-        elemConnect(sourceInfo, sink_e, source_e, context_mod)
+        elemConnect(using sourceInfo)(sink_e, source_e, context_mod)
       case (sink_e: EnumType, source_e: EnumType) if sink_e.typeEquivalent(source_e) =>
-        elemConnect(sourceInfo, sink_e, source_e, context_mod)
+        elemConnect(using sourceInfo)(sink_e, source_e, context_mod)
       case (sink_e: UnsafeEnum, source_e: UInt) =>
-        elemConnect(sourceInfo, sink_e, source_e, context_mod)
+        elemConnect(using sourceInfo)(sink_e, source_e, context_mod)
 
       // Handle Vec case
       case (sink_v: Vec[Data @unchecked], source_v: Vec[Data @unchecked]) =>
@@ -229,7 +229,7 @@ private[chisel3] object MonoConnect {
     */
   private[chisel3] def dataConnectContextCheck(
     using sourceInfo: SourceInfo,
-    sink:                Data,
+   )(sink:                Data,
     source:              Data,
     context_mod:         RawModule
   ): Boolean = {
@@ -385,7 +385,7 @@ private[chisel3] object MonoConnect {
   // Then it either issues it or throws the appropriate exception.
   def elemConnect(
     using sourceInfo: SourceInfo,
-    _sink:               Element,
+   )(_sink:               Element,
     _source:             Element,
     context_mod:         RawModule
   ): Unit = {

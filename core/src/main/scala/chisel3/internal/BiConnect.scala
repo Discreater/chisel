@@ -99,7 +99,7 @@ private[chisel3] object BiConnect {
         } catch { // convert attach exceptions to BiConnectExceptions
           case attach.AttachException(message) => throw BiConnectException(message)
         }
-        attach.impl(Seq(left_a, right_a), context_mod)(sourceInfo)
+        attach.impl(Seq(left_a, right_a), context_mod)(using sourceInfo)
       case (left_a: Analog, DontCare) =>
         try {
           markAnalogConnected(sourceInfo, left_a, DontCare, context_mod)
@@ -109,7 +109,7 @@ private[chisel3] object BiConnect {
         pushCommand(DefInvalid(sourceInfo, left_a.lref))
       case (DontCare, right_a: Analog) => connect(sourceInfo, right, left, context_mod)
       case (left_e: Element, right_e: Element) => {
-        elemConnect(sourceInfo, left_e, right_e, context_mod)
+        elemConnect(using sourceInfo)(left_e, right_e, context_mod)
         // TODO(twigg): Verify the element-level classes are connectable
       }
       // Handle Vec case
@@ -268,7 +268,8 @@ private[chisel3] object BiConnect {
     // check records live in appropriate contexts
     def contextCheck =
       MonoConnect.dataConnectContextCheck(
-        sourceInfo,
+        using sourceInfo
+      )(
         sink,
         source,
         context_mod
@@ -331,7 +332,7 @@ private[chisel3] object BiConnect {
   // Then it either issues it or throws the appropriate exception.
   def elemConnect(
     using sourceInfo: SourceInfo,
-    _left:               Element,
+   )(_left:               Element,
     _right:              Element,
     context_mod:         RawModule
   ): Unit = {

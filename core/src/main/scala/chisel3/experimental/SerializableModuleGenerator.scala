@@ -52,8 +52,8 @@ case class SerializableModuleGenerator[M <: SerializableModule[P], P <: Serializ
   generator: Class[M],
   parameter: P
 )(
-  implicit val pTag: universe.TypeTag[P],
-  implicit val mTag: universe.TypeTag[M]) {
+  using val pTag: universe.TypeTag[P],
+  val mTag: universe.TypeTag[M]) {
   private[chisel3] def construct: M = {
     require(
       generator.getConstructors.length == 1,

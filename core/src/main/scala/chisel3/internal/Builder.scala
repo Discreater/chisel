@@ -240,12 +240,12 @@ private[chisel3] trait HasId extends chisel3.InstanceId {
         if ((candidate_name != sanitized)) {
           Builder.error(
             s"Attempted to name $this with an unsanitary name '$candidate_name': sanitization results in a duplicated name '$sanitized'. Please seed a more unique name"
-          )(UnlocatableSourceInfo)
+          )(using UnlocatableSourceInfo)
         } else {
           // Otherwise the candidate name duplicates an existing name
           Builder.error(
             s"Attempted to name $this with a duplicated name '$candidate_name'. Use suggestName to seed a unique name"
-          )(UnlocatableSourceInfo)
+          )(using UnlocatableSourceInfo)
         }
       }
 

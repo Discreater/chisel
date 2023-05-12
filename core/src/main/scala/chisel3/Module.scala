@@ -10,7 +10,7 @@ import scala.language.experimental.macros
 import chisel3.internal._
 import chisel3.internal.Builder._
 import chisel3.internal.firrtl._
-import chisel3.experimental.{BaseModule, SourceInfo, UnlocatableSourceInfo}
+import chisel3.experimental.{BaseModule, SourceInfo, UnlocatableSourceInfo, requireIsChiselType}
 import _root_.firrtl.annotations.{IsModule, ModuleName, ModuleTarget}
 import _root_.firrtl.AnnotationSeq
 
@@ -146,8 +146,8 @@ object Module extends SourceInfoDoc {
   */
 abstract class Module extends RawModule {
   // Implicit clock and reset pins
-  final val clock: Clock = IO(Input(Clock()))(UnlocatableSourceInfo).suggestName("clock")
-  final val reset: Reset = IO(Input(mkReset))(UnlocatableSourceInfo).suggestName("reset")
+  final val clock: Clock = IO(Input(Clock()))(using UnlocatableSourceInfo).suggestName("clock")
+  final val reset: Reset = IO(Input(mkReset))(using UnlocatableSourceInfo).suggestName("reset")
 
   // TODO It's hard to remove these deprecated override methods because they're used by
   //   Chisel.QueueCompatibility which extends chisel3.Queue which extends chisel3.Module
@@ -399,14 +399,14 @@ package experimental {
               Builder.error(
                 s"""Unable to name port $port to "$name" in $this,""" +
                   s" name is already taken by another port! ${source.makeMessage(x => x)}"
-              )(UnlocatableSourceInfo)
+              )(using UnlocatableSourceInfo)
             }
             port.setRef(ModuleIO(this, _namespace.name(name)))
           case None =>
             Builder.error(
               s"Unable to name port $port in $this, " +
                 s"try making it a public field of the Module ${source.makeMessage(x => x)}"
-            )(UnlocatableSourceInfo)
+            )(using UnlocatableSourceInfo)
             port.setRef(ModuleIO(this, "<UNNAMED>"))
         }
       }
@@ -558,7 +558,7 @@ package experimental {
     // data must be a fresh Chisel type
     private[chisel3] def createSecretIO(data: => Data)(using sourceInfo: SourceInfo): Data = {
       val iodef = data
-      internal.requireIsChiselType(iodef, "io type")
+      experimental.requireIsChiselType(iodef, "io type")
       require(!isFullyClosed, "Cannot create secret ports if module is fully closed")
 
       iodef.bind(internal.SecretPortBinding(this))

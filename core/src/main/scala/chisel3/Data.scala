@@ -7,7 +7,7 @@ import chisel3.experimental.dataview.reify
 
 import scala.language.experimental.macros
 import chisel3.experimental.{Analog, BaseModule}
-import chisel3.experimental.{prefix, SourceInfo, UnlocatableSourceInfo}
+import chisel3.experimental.{prefix, SourceInfo, UnlocatableSourceInfo, requireIsChiselType}
 import chisel3.internal.Builder.pushCommand
 import chisel3.internal._
 import chisel3.internal.sourceinfo._
@@ -747,7 +747,7 @@ abstract class Data extends HasId with NamedComponent with SourceInfoDoc {
     */
   final def :=(that: => Data)(using sourceInfo: SourceInfo): Unit = {
     prefix(this) {
-      this.connect(that)(sourceInfo)
+      this.connect(that)(using sourceInfo)
     }
   }
 
@@ -764,7 +764,7 @@ abstract class Data extends HasId with NamedComponent with SourceInfoDoc {
     */
   final def <>(that: => Data)(using sourceInfo: SourceInfo): Unit = {
     prefix(this) {
-      this.bulkConnect(that)(sourceInfo)
+      this.bulkConnect(that)(using sourceInfo)
     }
   }
 
@@ -820,7 +820,7 @@ abstract class Data extends HasId with NamedComponent with SourceInfoDoc {
     * @note Aggregates are recursively packed with the first element appearing
     * in the least-significant bits of the result.
     */
-  final def asUInt(using sourceInfo: SourceInfo): UInt
+  def asUInt(using sourceInfo: SourceInfo): UInt
 
   /** Default pretty printing */
   def toPrintable: Printable
@@ -1141,7 +1141,7 @@ object WireInit extends WireDefaultImpl
 /** RHS (source) for Invalidate API.
   * Causes connection logic to emit a DefInvalid when connected to an output port (or wire).
   */
-final case object DontCare extends Element with connectable.ConnectableDocs {
+case object DontCare extends Element with connectable.ConnectableDocs {
   // This object should be initialized before we execute any user code that refers to it,
   //  otherwise this "Chisel" object will end up on the UserModule's id list.
   // We make it private to chisel3 so it has to be accessed through the package object.
