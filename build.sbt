@@ -343,6 +343,31 @@ lazy val plugin = (project in file("plugin"))
     }
   )
 
+val scala3StableVersion = "3.2.2"
+
+lazy val plugin3 = (project in file("plugin3"))
+  .settings(name := "chisel-plugin3")
+  .settings(commonSettings: _*)
+  .settings(publishSettings: _*)
+  .settings(
+    libraryDependencies += "org.scala-lang" %% "scala3-compiler" % scalaVersion.value,
+    crossScalaVersions := Seq(
+      scala3StableVersion
+    ),
+    // Must be published for Scala minor version
+    crossVersion := CrossVersion.full,
+    crossTarget := {
+      // workaround for https://github.com/sbt/sbt/issues/5097
+      target.value / s"scala-${scalaVersion.value}"
+    }
+  )
+  .settings(fatalWarningsSettings: _*)
+  .settings(
+    mimaPreviousArtifacts := previousVersions.value.map { version =>
+      (organization.value % name.value % version).cross(CrossVersion.full)
+    }
+  )
+
 lazy val usePluginSettings = Seq(
   Compile / scalacOptions ++= {
     val jar = (plugin / Compile / Keys.`package`).value

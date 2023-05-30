@@ -77,17 +77,17 @@ extension (bigint: BigInt) {
   def asSInt(width: Width): SInt = SInt.Lit(bigint, width)
 }
 
-extension (int: Int) {
-  def B: Bool = BigInt(int).B
-  def U: UInt = BigInt(int).U
-  def S: SInt = BigInt(int).S
-  def U(width: Width): UInt = BigInt(int).U(width)
-  def S(width: Width): SInt = BigInt(int).S(width)
-  def asUInt: UInt = BigInt(int).asUInt
-  def asSInt: SInt = BigInt(int).asSInt
-  def asUInt(width: Width): UInt = BigInt(int).asUInt(width)
-  def asSInt(width: Width): SInt = BigInt(int).asSInt(width)
-}
+// extension (int: Int) {
+//   def B: Bool = BigInt(int).B
+//   def U: UInt = BigInt(int).U
+//   def S: SInt = BigInt(int).S
+//   def U(width: Width): UInt = BigInt(int).U(width)
+//   def S(width: Width): SInt = BigInt(int).S(width)
+//   def asUInt: UInt = BigInt(int).asUInt
+//   def asSInt: SInt = BigInt(int).asSInt
+//   def asUInt(width: Width): UInt = BigInt(int).asUInt(width)
+//   def asSInt(width: Width): SInt = BigInt(int).asSInt(width)
+// }
 
 extension (long: Long) {
   def B: Bool = BigInt(long).B

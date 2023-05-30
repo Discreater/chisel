@@ -17,7 +17,6 @@ private[chisel3] class instantiable extends MacroAnnotation {
   ): List[quotes.reflect.Definition] = {
     import q.reflect._
     report.warning("scala 3 now cannot add extra implicit classes to a class, so this annotation is deprecated", tree.pos)
-
     // tree match {
     //   case ClassDef(name, ctr, parents, self, body) =>
     //     {

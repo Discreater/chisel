@@ -471,7 +471,7 @@ sealed class UInt private[chisel3] (width: Width) extends Bits(width) with Num[U
     binop(sourceInfo, UInt(this.width.max(that.width)), BitXorOp, that)
 
   /** @group SourceInfoTransformMacro */
-  def do_unary_~(using sourceInfo: SourceInfo): UInt =
+  def unary_~(using sourceInfo: SourceInfo): UInt =
     unop(sourceInfo, UInt(width = width), BitNotOp)
 
   // REVIEW TODO: Can these be defined on Bits?
@@ -757,7 +757,7 @@ sealed class SInt private[chisel3] (width: Width) extends Bits(width) with Num[S
     binop(sourceInfo, UInt(this.width.max(that.width)), BitXorOp, that).asSInt
 
   /** @group SourceInfoTransformMacro */
-  def do_unary_~(using sourceInfo: SourceInfo): SInt =
+  def unary_~(using sourceInfo: SourceInfo): SInt =
     unop(sourceInfo, UInt(width = width), BitNotOp).asSInt
 
   override def do_<(that: SInt)(using sourceInfo: SourceInfo): Bool =
@@ -786,17 +786,17 @@ sealed class SInt private[chisel3] (width: Width) extends Bits(width) with Num[S
     Mux(this < 0.S, -this, this)
   }
 
-  override def do_<<(that: Int)(using sourceInfo: SourceInfo): SInt =
+  override def <<(that: Int)(using sourceInfo: SourceInfo): SInt =
     binop(sourceInfo, SInt(this.width + that), ShiftLeftOp, validateShiftAmount(that))
-  override def do_<<(that: BigInt)(using sourceInfo: SourceInfo): SInt =
+  override def <<(that: BigInt)(using sourceInfo: SourceInfo): SInt =
     this << castToInt(that, "Shift amount")
-  override def do_<<(that: UInt)(using sourceInfo: SourceInfo): SInt =
+  override def <<(that: UInt)(using sourceInfo: SourceInfo): SInt =
     binop(sourceInfo, SInt(this.width.dynamicShiftLeft(that.width)), DynamicShiftLeftOp, that)
-  override def do_>>(that: Int)(using sourceInfo: SourceInfo): SInt =
+  override def >>(that: Int)(using sourceInfo: SourceInfo): SInt =
     binop(sourceInfo, SInt(this.width.shiftRight(that)), ShiftRightOp, validateShiftAmount(that))
-  override def do_>>(that: BigInt)(using sourceInfo: SourceInfo): SInt =
+  override def >>(that: BigInt)(using sourceInfo: SourceInfo): SInt =
     this >> castToInt(that, "Shift amount")
-  override def do_>>(that: UInt)(using sourceInfo: SourceInfo): SInt =
+  override def >>(that: UInt)(using sourceInfo: SourceInfo): SInt =
     binop(sourceInfo, SInt(this.width), DynamicShiftRightOp, that)
 
   override def do_asUInt(using sourceInfo: SourceInfo): UInt = pushOp(
@@ -974,7 +974,7 @@ sealed class Bool() extends UInt(1.W) with Reset {
     binop(sourceInfo, Bool(), BitXorOp, that)
 
   /** @group SourceInfoTransformMacro */
-  override def do_unary_~(using sourceInfo: SourceInfo): Bool =
+  override def unary_~(using sourceInfo: SourceInfo): Bool =
     unop(sourceInfo, Bool(), BitNotOp)
 
   /** Logical or operator
